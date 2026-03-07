@@ -126,7 +126,7 @@
       }
     ];
 
-    const GOOGLE_SCRIPT_URL = "URL_WEB_APP_ANDA_DISINI";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4FBfjgKIoSoXmqYw52M7QX_K-8ljDCG3L3sauNt2PbOKYy2pv8NBZKcThZr3V8zk3yw/exec";
 
     // ==========================================
     // MAIN COMPONENT
@@ -160,7 +160,7 @@
       const fetchData = async () => {
         setIsLoading(true);
         try {
-          if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyITmZdTt2MjKLNeM_lEEFHU8KGcqwptopwEPcxnByqxC7Ei1cAVvh0_9L_jOLkXSmpFA/exec") {
+          if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbw4FBfjgKIoSoXmqYw52M7QX_K-8ljDCG3L3sauNt2PbOKYy2pv8NBZKcThZr3V8zk3yw/exec") {
             setTimeout(() => setIsLoading(false), 800);
             return;
           }
@@ -184,7 +184,7 @@
         setIsLoading(true);
         setFormModal({ isOpen: false, title: '' }); 
         try {
-          if (GOOGLE_SCRIPT_URL !== "URL_WEB_APP_ANDA_DISINI") {
+          if (GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbw4FBfjgKIoSoXmqYw52M7QX_K-8ljDCG3L3sauNt2PbOKYy2pv8NBZKcThZr3V8zk3yw/exec") {
             await fetch(GOOGLE_SCRIPT_URL, {
               method: "POST", body: JSON.stringify({ action: "add", sheet: sheetName, data: newData })
             });
@@ -201,7 +201,7 @@
         showConfirm("Hapus Data", `Anda yakin ingin menghapus data ${id} dari ${sheetName}? Tindakan ini tidak dapat dibatalkan.`, async () => {
           setIsLoading(true);
           try {
-            if (GOOGLE_SCRIPT_URL !== "URL_WEB_APP_ANDA_DISINI") {
+            if (GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbw4FBfjgKIoSoXmqYw52M7QX_K-8ljDCG3L3sauNt2PbOKYy2pv8NBZKcThZr3V8zk3yw/exec") {
               await fetch(GOOGLE_SCRIPT_URL, {
                 method: "POST", body: JSON.stringify({ action: "delete", sheet: sheetName, id: id })
               });
