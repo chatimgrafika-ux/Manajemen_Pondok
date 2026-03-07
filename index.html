@@ -540,7 +540,10 @@
                 {/* Tombol Akses Formulir Tambah */}
                 {['data-santri', 'akademik', 'ortu'].includes(activeMenu) && (
                   <button 
-                    onClick={() => window.location.href = 'santriform.html'}
+                    onClick={() => {
+                      sessionStorage.removeItem('editSantriData'); // Hapus memori edit jika ada
+                      window.location.href = 'santriform.html';
+                    }}
                     className="hidden sm:flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow-emerald-600/30 whitespace-nowrap"
                   >
                     + Tambah Baru
@@ -848,7 +851,14 @@
                       </div>
                     </div>
                     <div className="flex gap-2">
-                       <button onClick={() => window.location.href = `santriform.html?id=${selectedSantri.id}&mode=edit`} className="hidden sm:block p-2 text-blue-500 hover:text-white hover:bg-blue-600 rounded-xl transition-colors bg-blue-50 border border-blue-100 shadow-sm" title="Edit Data">
+                       <button 
+                         onClick={() => {
+                           // Simpan data santri ini ke session storage sebelum pindah
+                           sessionStorage.setItem('editSantriData', JSON.stringify(selectedSantri));
+                           window.location.href = `santriform.html?id=${selectedSantri.id}&mode=edit`;
+                         }} 
+                         className="hidden sm:block p-2 text-blue-500 hover:text-white hover:bg-blue-600 rounded-xl transition-colors bg-blue-50 border border-blue-100 shadow-sm" title="Edit Data"
+                       >
                          <EditIcon size={20} />
                        </button>
                        <button onClick={() => handleDeleteData("Santri", selectedSantri.id)} className="hidden sm:block p-2 text-red-500 hover:text-white hover:bg-red-600 rounded-xl transition-colors bg-red-50 border border-red-100 shadow-sm" title="Hapus Data">
