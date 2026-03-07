@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulir Pendaftaran Santri</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-200 min-h-screen flex items-center justify-center p-4 sm:p-6 font-sans text-slate-800">
+
+  <!-- Modal / Container Card -->
+  <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col my-auto max-h-full">
+      
+      <!-- Header Modal -->
+      <div class="p-6 border-b border-slate-200 flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-2xl">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center">
+            <i data-lucide="users" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-800">
+            Tambah Santri Baru
+          </h3>
+        </div>
+        <button type="button" class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Body Form -->
+      <form id="santriForm" class="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50">
+        
+        <!-- SECTION 1: IDENTITAS UTAMA -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-md font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center">
+            <i data-lucide="user" class="mr-2 text-emerald-600 w-5 h-5"></i> Identitas Utama
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">ID Santri</label>
+              <input type="text" name="id" placeholder="Otomatis jika kosong" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+            </div>
+            <div class="space-y-1 lg:col-span-2">
+              <label class="text-xs font-bold text-slate-500 uppercase">Nama Lengkap <span class="text-red-500">*</span></label>
+              <input type="text" name="namaLengkap" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">NIPD</label>
+              <input type="text" name="nipd" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">NISN</label>
+              <input type="text" name="nisn" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">Jenis Kelamin</label>
+              <select name="jenisKelamin" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white">
+                <option value="PUTRA">PUTRA</option>
+                <option value="PUTRI">PUTRI</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: AKADEMIK & PENEMPATAN -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-md font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center">
+            <i data-lucide="graduation-cap" class="mr-2 text-emerald-600 w-5 h-5"></i> Akademik & Penempatan
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">Status</label>
+              <select name="status" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm bg-white">
+                <option value="Aktif">Aktif</option>
+                <option value="Non-Aktif">Non-Aktif</option>
+                <option value="Lulus">Lulus</option>
+              </select>
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">Jenjang</label>
+              <select name="jenjang" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm bg-white">
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA">SMA</option>
+              </select>
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">Kelas</label>
+              <input type="text" name="kelas" placeholder="Misal: I - A" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">Halaqoh</label>
+              <input type="text" name="halaqoh" placeholder="Misal: Halaqoh Utsman" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: KONTAK & ALAMAT -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-md font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center">
+            <i data-lucide="map-pin" class="mr-2 text-emerald-600 w-5 h-5"></i> Alamat & Kontak
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div class="space-y-1 sm:col-span-3">
+              <label class="text-xs font-bold text-slate-500 uppercase">Alamat Lengkap</label>
+              <input type="text" name="alamat" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">Kecamatan</label>
+              <input type="text" name="kecamatan" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">Kabupaten/Kota</label>
+              <input type="text" name="kabupaten" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-bold text-slate-500 uppercase">No. WA Santri</label>
+              <input type="text" name="waSantri" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: DATA ORANG TUA -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-md font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center">
+            <i data-lucide="users" class="mr-2 text-emerald-600 w-5 h-5"></i> Informasi Orang Tua
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div class="space-y-4">
+              <h5 class="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg inline-block">Data Ayah</h5>
+              <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Nama Ayah</label>
+                <input type="text" name="namaAyah" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+              </div>
+              <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Pekerjaan</label>
+                <input type="text" name="pekerjaanAyah" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+              </div>
+              <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">No. WhatsApp</label>
+                <input type="text" name="waAyah" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <h5 class="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg inline-block">Data Ibu</h5>
+              <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Nama Ibu</label>
+                <input type="text" name="namaIbu" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+              </div>
+              <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Pekerjaan</label>
+                <input type="text" name="pekerjaanIbu" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+              </div>
+              <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">No. WhatsApp</label>
+                <input type="text" name="waIbu" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none text-sm">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Form Sticky Bottom -->
+        <div class="sticky bottom-0 bg-white p-4 border-t border-slate-200 -mx-6 -mb-6 mt-8 rounded-b-2xl flex justify-end space-x-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <button type="button" class="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+            Batal
+          </button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all flex items-center">
+            <i data-lucide="save" class="mr-2 w-4 h-4"></i>
+            Simpan Santri Baru
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Logic penanganan form via Javascript Murni
+    document.getElementById('santriForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Mengambil data dari form html
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+
+      // Membuat ID final jika kosong
+      const finalId = data.id || `SNT-${Date.now().toString().slice(-6)}`;
+
+      // 1. Map ke format Sheet "Database Utama"
+      const dataUtama = {
+        "ID": finalId,
+        "Nama Lengkap": data.namaLengkap,
+        "NIPD": data.nipd,
+        "NISN": data.nisn,
+        "Status": data.status,
+        "Jenjang": data.jenjang,
+        "Nama Halaqoh": data.halaqoh,
+        "Tahun Masuk": new Date().getFullYear().toString(),
+        "Kelas": data.kelas,
+        "Jenis Kelamin": data.jenisKelamin,
+        "Tempat Lahir": data.tempatLahir || '',
+        "Tanggal Lahir": data.tanggalLahir || '',
+        "NIK": data.nik || '',
+        "Agama": data.agama || 'Islam',
+        "Alamat": data.alamat,
+        "Desa": data.desa,
+        "Kecamatan": data.kecamatan,
+        "Kabupaten/Kota": data.kabupaten,
+        "Nomor Whatsapp": data.waSantri
+      };
+
+      // 2. Map ke format Sheet "Informasi_Wali"
+      const dataWali = {
+        "ID": finalId,
+        "Nama Lengkap": data.namaLengkap,
+        "Nama Ayah": data.namaAyah,
+        "Pekerjaan Ayah": data.pekerjaanAyah,
+        "Nomor Hp / WhatsApp Ayah": data.waAyah,
+        "Nama Ibu": data.namaIbu,
+        "Pekerjaan Ibu": data.pekerjaanIbu,
+        "Nomor Hp / WhatsApp Ibu": data.waIbu
+      };
+
+      // Payload akhir
+      const payload = {
+        action: "multi_add", // Asumsi default tambah baru
+        id: finalId, 
+        data: {
+          "Database Utama": dataUtama,
+          "Informasi_Wali": dataWali
+        }
+      };
+
+      console.log("Payload data yang akan dikirim ke API:", payload);
+      alert('Berhasil! Cek console browser (F12) untuk melihat struktur JSON Multi-sheet.');
+    });
+  </script>
+</body>
+</html>
