@@ -5,70 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistem Manajemen Santri | Yayasan Hidayatullah</title>
   
-  <!-- Tailwind CSS via CDN -->
+  <!-- ========================================== -->
+  <!-- 1. PUSTAKA EKSTERNAL (CDN)                 -->
+  <!-- ========================================== -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Phosphor Icons via CDN -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  
-  <!-- React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  
-  <!-- Babel untuk kompilasi JSX di Browser -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <!-- ========================================== -->
+  <!-- 2. KUSTOMISASI CSS                         -->
+  <!-- ========================================== -->
   <style>
+    /* Menyembunyikan scrollbar bawaan agar UI lebih bersih */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Animasi Transisi Halus */
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
     @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
     .animate-fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
     .animate-slide-in-right { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     .animate-zoom-in { animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   </style>
 </head>
+
 <body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-hidden">
   
+  <!-- Wadah Utama Aplikasi React -->
   <div id="root"></div>
 
+  <!-- Script Utama Aplikasi -->
   <script type="text/babel">
+    /**
+     * ==========================================
+     * DAFTAR ISI SCRIPT:
+     * 1. KONFIGURASI API
+     * 2. DATA SEMENTARA (MOCK DATA)
+     * 3. KOMPONEN IKON
+     * 4. KOMPONEN PENDUKUNG (InfoItem, DetailTabs)
+     * 5. KOMPONEN UTAMA (App Dashboard)
+     * 6. INISIALISASI RENDER
+     * ==========================================
+     */
+
     const { useState, useMemo, useEffect } = React;
 
     // ==========================================
-    // ICON WRAPPERS (Phosphor Icons)
+    // 1. KONFIGURASI API
+    // Ganti URL di bawah ini dengan URL Web App Google Apps Script Anda
     // ==========================================
-    const IconWrapper = ({ name, size = 20, className = '' }) => <i className={`ph ${name} ${className}`} style={{ fontSize: size }}></i>;
-    
-    const Users = (props) => <IconWrapper name="ph-users" {...props} />;
-    const LayoutDashboard = (props) => <IconWrapper name="ph-squares-four" {...props} />;
-    const Wallet = (props) => <IconWrapper name="ph-wallet" {...props} />;
-    const Settings = (props) => <IconWrapper name="ph-gear" {...props} />;
-    const Search = (props) => <IconWrapper name="ph-magnifying-glass" {...props} />;
-    const Filter = (props) => <IconWrapper name="ph-funnel" {...props} />;
-    const ChevronRight = (props) => <IconWrapper name="ph-caret-right" {...props} />;
-    const UserCircle = (props) => <IconWrapper name="ph-user-circle" {...props} />;
-    const FileText = (props) => <IconWrapper name="ph-file-text" {...props} />;
-    const MapPin = (props) => <IconWrapper name="ph-map-pin" {...props} />;
-    const GraduationCap = (props) => <IconWrapper name="ph-graduation-cap" {...props} />;
-    const CreditCard = (props) => <IconWrapper name="ph-credit-card" {...props} />;
-    const X = (props) => <IconWrapper name="ph-x" {...props} />;
-    const CheckCircle2 = (props) => <IconWrapper name="ph-check-circle" {...props} />;
-    const Clock = (props) => <IconWrapper name="ph-clock" {...props} />;
-    const FileCheck = (props) => <IconWrapper name="ph-file-check" {...props} />;
-    const FileX = (props) => <IconWrapper name="ph-file-x" {...props} />;
-    const BookOpen = (props) => <IconWrapper name="ph-book-open" {...props} />;
-    const Award = (props) => <IconWrapper name="ph-medal" {...props} />;
-    const School = (props) => <IconWrapper name="ph-buildings" {...props} />;
-    const Briefcase = (props) => <IconWrapper name="ph-briefcase" {...props} />;
-    const Loader2 = (props) => <IconWrapper name="ph-spinner ph-spin" {...props} />;
-    const Menu = (props) => <IconWrapper name="ph-list" {...props} />;
-    const AlertTriangle = (props) => <IconWrapper name="ph-warning" {...props} />;
-    const EditIcon = (props) => <IconWrapper name="ph-pencil-simple" {...props} />;
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4FBfjgKIoSoXmqYw52M7QX_K-8ljDCG3L3sauNt2PbOKYy2pv8NBZKcThZr3V8zk3yw/exec";
+
 
     // ==========================================
-    // MOCK DATA (Digunakan sementara jika belum konek API)
+    // 2. DATA SEMENTARA (MOCK DATA)
+    // Akan digunakan jika aplikasi belum terhubung ke Spreadsheet
     // ==========================================
     const mockSantri = [
       {
@@ -116,12 +111,166 @@
       }
     ];
 
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4FBfjgKIoSoXmqYw52M7QX_K-8ljDCG3L3sauNt2PbOKYy2pv8NBZKcThZr3V8zk3yw/exec";
 
     // ==========================================
-    // MAIN COMPONENT
+    // 3. KOMPONEN IKON
+    // ==========================================
+    const IconWrapper = ({ name, size = 20, className = '' }) => <i className={`ph ${name} ${className}`} style={{ fontSize: size }}></i>;
+    
+    const Users = (props) => <IconWrapper name="ph-users" {...props} />;
+    const LayoutDashboard = (props) => <IconWrapper name="ph-squares-four" {...props} />;
+    const Wallet = (props) => <IconWrapper name="ph-wallet" {...props} />;
+    const Settings = (props) => <IconWrapper name="ph-gear" {...props} />;
+    const Search = (props) => <IconWrapper name="ph-magnifying-glass" {...props} />;
+    const Filter = (props) => <IconWrapper name="ph-funnel" {...props} />;
+    const ChevronRight = (props) => <IconWrapper name="ph-caret-right" {...props} />;
+    const UserCircle = (props) => <IconWrapper name="ph-user-circle" {...props} />;
+    const FileText = (props) => <IconWrapper name="ph-file-text" {...props} />;
+    const MapPin = (props) => <IconWrapper name="ph-map-pin" {...props} />;
+    const GraduationCap = (props) => <IconWrapper name="ph-graduation-cap" {...props} />;
+    const CreditCard = (props) => <IconWrapper name="ph-credit-card" {...props} />;
+    const X = (props) => <IconWrapper name="ph-x" {...props} />;
+    const CheckCircle2 = (props) => <IconWrapper name="ph-check-circle" {...props} />;
+    const Clock = (props) => <IconWrapper name="ph-clock" {...props} />;
+    const FileCheck = (props) => <IconWrapper name="ph-file-check" {...props} />;
+    const FileX = (props) => <IconWrapper name="ph-file-x" {...props} />;
+    const BookOpen = (props) => <IconWrapper name="ph-book-open" {...props} />;
+    const Award = (props) => <IconWrapper name="ph-medal" {...props} />;
+    const School = (props) => <IconWrapper name="ph-buildings" {...props} />;
+    const Briefcase = (props) => <IconWrapper name="ph-briefcase" {...props} />;
+    const Loader2 = (props) => <IconWrapper name="ph-spinner ph-spin" {...props} />;
+    const Menu = (props) => <IconWrapper name="ph-list" {...props} />;
+    const AlertTriangle = (props) => <IconWrapper name="ph-warning" {...props} />;
+    const EditIcon = (props) => <IconWrapper name="ph-pencil-simple" {...props} />;
+
+
+    // ==========================================
+    // 4. KOMPONEN PENDUKUNG (UI BANTUAN)
+    // ==========================================
+    
+    // Komponen untuk menampilkan label dan teks data
+    function InfoItem({ label, value }) {
+      return (
+        <div className="flex flex-col">
+          <span className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">{label}</span>
+          <span className="text-sm font-bold text-slate-800">{value || '-'}</span>
+        </div>
+      );
+    }
+
+    // Komponen Tab Detail Profil Santri
+    function DetailTabs({ santri }) {
+      const [activeTab, setActiveTab] = useState('data-santri');
+      const tabs = [
+        { id: 'data-santri', label: 'Data Santri', icon: FileText },
+        { id: 'akademik', label: 'Akademik', icon: GraduationCap },
+        { id: 'ortu', label: 'Informasi Wali', icon: Users }
+      ];
+
+      return (
+        <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+          {/* Header Tab */}
+          <div className="flex px-4 lg:px-8 border-b border-slate-200 space-x-2 lg:space-x-8 bg-white pt-4 overflow-x-auto no-scrollbar">
+            {tabs.map(tab => (
+              <button
+                key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center space-x-2 pb-4 border-b-2 transition-colors whitespace-nowrap px-2 ${
+                  activeTab === tab.id ? 'border-emerald-600 text-emerald-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium'
+                }`}
+              >
+                <tab.icon size={18} /><span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Konten Tab */}
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8">
+            
+            {/* Tab: Data Santri */}
+            {activeTab === 'data-santri' && (
+              <div className="max-w-5xl space-y-6 lg:space-y-8 animate-fade-in">
+                 <div>
+                  <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">Identitas Utama</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <InfoItem label="NIPD" value={santri.nipd} />
+                    <InfoItem label="NISN" value={santri.nisn} />
+                    <InfoItem label="Nama Lengkap" value={santri.namaLengkap} />
+                    <InfoItem label="Jenis Kelamin" value={santri.jenisKelamin} />
+                    <InfoItem label="Tempat, Tgl Lahir" value={santri.ttl} />
+                    <InfoItem label="NIK" value={santri.nik} />
+                    <InfoItem label="Agama" value={santri.agama} />
+                    <InfoItem label="Tahun Masuk" value={santri.tahunMasuk} />
+                    <InfoItem label="Status Dapodik" value={santri.dapodik} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Orang Tua / Wali */}
+            {activeTab === 'ortu' && (
+              <div className="max-w-5xl space-y-6 animate-fade-in">
+                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Alamat & Kontak Santri</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="col-span-1 lg:col-span-3"><InfoItem label="Alamat Lengkap" value={santri.kontak?.alamat} /></div>
+                    <InfoItem label="Desa" value={santri.kontak?.desa} />
+                    <InfoItem label="Kecamatan" value={santri.kontak?.kecamatan} />
+                    <InfoItem label="No WA Santri" value={santri.kontak?.wa} />
+                  </div>
+                </div>
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                      <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Ayah</h3>
+                      <div className="grid grid-cols-2 gap-5">
+                        <div className="col-span-2"><InfoItem label="Nama Lengkap" value={santri.keluarga?.ayah?.nama} /></div>
+                        <div className="col-span-2"><InfoItem label="Pekerjaan" value={santri.keluarga?.ayah?.pekerjaan} /></div>
+                        <div className="col-span-2"><InfoItem label="Nomor WA" value={santri.keluarga?.ayah?.hp} /></div>
+                      </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                      <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Ibu</h3>
+                      <div className="grid grid-cols-2 gap-5">
+                        <div className="col-span-2"><InfoItem label="Nama Lengkap" value={santri.keluarga?.ibu?.nama} /></div>
+                        <div className="col-span-2"><InfoItem label="Pekerjaan" value={santri.keluarga?.ibu?.pekerjaan} /></div>
+                        <div className="col-span-2"><InfoItem label="Nomor WA" value={santri.keluarga?.ibu?.hp} /></div>
+                      </div>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {/* Tab: Akademik */}
+            {activeTab === 'akademik' && (
+              <div className="max-w-5xl space-y-6 animate-fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Sekolah Asal</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                     <InfoItem label="Nama Sekolah Asal" value={santri.asalSekolah?.nama} />
+                     <InfoItem label="NPSN" value={santri.asalSekolah?.npsn} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Komponen Tab Detail Pengajar
+    function DetailPengajarTabs({ pengajar }) {
+      return (
+        <div className="flex-1 flex flex-col bg-slate-50 p-8 overflow-hidden">
+          <p className="text-slate-500 font-medium">Informasi mendetail pengajar (Sedang dikembangkan)...</p>
+        </div>
+      );
+    }
+
+
+    // ==========================================
+    // 5. KOMPONEN UTAMA (APP DASHBOARD)
     // ==========================================
     function App() {
+      // --- STATE & VARIABEL ---
       const [activeMenu, setActiveMenu] = useState('data-santri');
       const [isSidebarOpen, setIsSidebarOpen] = useState(false);
       const [searchQuery, setSearchQuery] = useState('');
@@ -137,22 +286,24 @@
 
       const [dialog, setDialog] = useState({ isOpen: false, type: 'info', title: '', message: '', onConfirm: null });
 
+      // --- LOGIKA UTAMA ---
       const showMessage = (title, message, type = 'info') => setDialog({ isOpen: true, type, title, message, onConfirm: null });
       const showConfirm = (title, message, onConfirm) => setDialog({ isOpen: true, type: 'confirm', title, message, onConfirm });
       const closeDialog = () => setDialog(prev => ({ ...prev, isOpen: false }));
 
+      // Fetch Data dari API Spreadsheet
       const fetchData = async () => {
         setIsLoading(true);
         try {
           if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbw4FBfjgKIoSoXmqYw52M7QX_K-8ljDCG3L3sauNt2PbOKYy2pv8NBZKcThZr3V8zk3yw/exec") {
-            setTimeout(() => setIsLoading(false), 800);
+            setTimeout(() => setIsLoading(false), 800); // Simulasi delay jika belum ada URL
             return;
           }
           const response = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=all`);
           const result = await response.json();
           if (result.status === 'success') {
             console.log("Data tersinkronisasi.", result.data);
-            // Logic mapping data JSON ke state disini
+            // Anda bisa melakukan pemetaan JSON (mapping) di sini
           }
         } catch (error) {
           showMessage("Error Sinkronisasi", "Gagal mengambil data dari server. Periksa koneksi Anda.", "error");
@@ -165,6 +316,7 @@
         fetchData();
       }, []);
 
+      // Menghapus Data
       const handleDeleteData = (sheetName, id) => {
         showConfirm("Hapus Data", `Anda yakin ingin menghapus data ${id}? Tindakan ini akan menghapus data dari seluruh tabel terkait.`, async () => {
           setIsLoading(true);
@@ -174,7 +326,7 @@
                 method: "POST", body: JSON.stringify({ action: "multi_delete", id: id })
               });
             }
-            // Simulasi lokal
+            // Hapus dari state lokal
             setDataSantri(prev => prev.filter(s => s.id !== id));
             setSelectedSantri(null);
             showMessage("Terhapus", "Data berhasil dihapus dari sistem.", "success");
@@ -185,12 +337,14 @@
         });
       };
 
+      // Konfigurasi Navigasi
       const menuTitles = {
         'data-santri': 'Data Santri', 'akademik': 'Akademik', 'ortu': 'Informasi Orang Tua',
         'tahfizh': 'Tahfizh & Prestasi', 'keuangan': 'Keuangan', 'kelas-halaqoh': 'Manajemen Kelas & Halaqoh',
         'pengajar': 'Manajemen Pengajar'
       };
 
+      // Filter Pencarian
       const filteredSantri = useMemo(() => {
         return dataSantri.filter(s => s.namaLengkap.toLowerCase().includes(searchQuery.toLowerCase()) || s.id.toLowerCase().includes(searchQuery.toLowerCase()));
       }, [searchQuery, dataSantri]);
@@ -199,6 +353,7 @@
         return dataPengajar.filter(p => p.namaLengkap.toLowerCase().includes(searchQuery.toLowerCase()) || p.id.toLowerCase().includes(searchQuery.toLowerCase()));
       }, [searchQuery, dataPengajar]);
 
+      // Komponen Internal Sidebar Menu
       const SidebarItem = ({ icon: Icon, label, id }) => (
         <button 
           onClick={() => { 
@@ -214,15 +369,16 @@
         </button>
       );
 
+      // --- TAMPILAN RENDER UTAMA ---
       return (
         <div className="flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden">
           
-          {/* MOBILE OVERLAY */}
+          {/* Overlay Mobile */}
           {isSidebarOpen && (
             <div className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
           )}
 
-          {/* SIDEBAR */}
+          {/* Area Sidebar Kiri */}
           <aside className={`fixed lg:static inset-y-0 left-0 w-72 bg-slate-900 text-white p-6 flex flex-col shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             <div className="flex items-center justify-between mb-10">
               <div className="flex items-center space-x-3">
@@ -263,9 +419,10 @@
             </div>
           </aside>
 
-          {/* MAIN CONTENT */}
+          {/* Area Konten Kanan */}
           <main className="flex-1 flex flex-col w-full h-full relative overflow-hidden">
-            {/* HEADER */}
+            
+            {/* Navigasi Atas (Header) */}
             <header className="bg-white border-b border-slate-200 h-20 flex-shrink-0 flex items-center justify-between px-4 lg:px-8 shadow-sm">
               <div className="flex items-center space-x-4">
                 <button className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg" onClick={() => setIsSidebarOpen(true)}>
@@ -287,17 +444,13 @@
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input 
-                    type="text" 
-                    placeholder="Cari data..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    type="text" placeholder="Cari data..." 
+                    value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm transition-all"
                   />
                 </div>
                 
-                {/* Tombol Tambah Baru sekarang langsung mengarahkan pengguna
-                  ke halaman santriform.html
-                */}
+                {/* Tombol Akses Formulir Tambah */}
                 {['data-santri', 'akademik', 'ortu'].includes(activeMenu) && (
                   <button 
                     onClick={() => window.location.href = 'santriform.html'}
@@ -309,10 +462,10 @@
               </div>
             </header>
 
-            {/* CONTENT AREA */}
+            {/* Area Isi Data (Konten Scrollable) */}
             <div className="flex-1 overflow-auto p-4 lg:p-8 bg-slate-50 relative">
               
-              {/* VIEW: MANAJEMEN KELAS & HALAQOH */}
+              {/* Tampilan: Manajemen Kelas & Halaqoh */}
               {activeMenu === 'kelas-halaqoh' && !selectedSantri && (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-fade-in">
                   <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[600px]">
@@ -383,7 +536,7 @@
                 </div>
               )}
 
-              {/* VIEW: TABEL UTAMA DINAMIS */}
+              {/* Tampilan: Tabel Utama Dinamis */}
               {activeMenu !== 'kelas-halaqoh' && activeMenu !== 'pengajar' && !selectedSantri && (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
                   <div className="overflow-x-auto">
@@ -539,7 +692,7 @@
                 </div>
               )}
 
-              {/* VIEW: TABEL PENGAJAR */}
+              {/* Tampilan: Tabel Pengajar */}
               {activeMenu === 'pengajar' && !selectedPengajar && (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
                   <div className="overflow-x-auto">
@@ -585,7 +738,7 @@
                 </div>
               )}
 
-              {/* VIEW: DETAIL SANTRI (SLIDE IN OVERLAY) */}
+              {/* Tampilan: Profil Detail Santri (Popup Geser) */}
               {selectedSantri && (
                 <div className="absolute inset-0 bg-white z-20 flex flex-col animate-slide-in-right rounded-tl-2xl shadow-2xl overflow-hidden">
                   <div className="p-4 lg:p-8 border-b border-slate-200 flex items-start justify-between bg-white relative z-10">
@@ -608,7 +761,6 @@
                       </div>
                     </div>
                     <div className="flex gap-2">
-                       {/* Tombol Edit Santri MENGARAH KE santriform.html beserta parameter ID */}
                        <button onClick={() => window.location.href = `santriform.html?id=${selectedSantri.id}&mode=edit`} className="hidden sm:block p-2 text-blue-500 hover:text-white hover:bg-blue-600 rounded-xl transition-colors bg-blue-50 border border-blue-100 shadow-sm" title="Edit Data">
                          <EditIcon size={20} />
                        </button>
@@ -624,7 +776,7 @@
                 </div>
               )}
 
-              {/* VIEW: DETAIL PENGAJAR (SLIDE IN OVERLAY) */}
+              {/* Tampilan: Profil Detail Pengajar (Popup Geser) */}
               {selectedPengajar && (
                 <div className="absolute inset-0 bg-white z-20 flex flex-col animate-slide-in-right rounded-tl-2xl shadow-2xl overflow-hidden">
                   <div className="p-4 lg:p-8 border-b border-slate-200 flex items-start justify-between bg-white relative z-10">
@@ -658,9 +810,7 @@
             </div>
           </main>
 
-          {/* ========================================= */}
-          {/* CUSTOM DIALOG / MESSAGE BOX */}
-          {/* ========================================= */}
+          {/* Kotak Dialog Kustom (Peringatan & Konfirmasi) */}
           {dialog.isOpen && (
             <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-zoom-in">
@@ -704,117 +854,8 @@
     }
 
     // ==========================================
-    // SUB-COMPONENTS DETAILS
+    // 6. INISIALISASI RENDER APLIKASI
     // ==========================================
-    function DetailTabs({ santri }) {
-      const [activeTab, setActiveTab] = useState('data-santri');
-      const tabs = [
-        { id: 'data-santri', label: 'Data Santri', icon: FileText },
-        { id: 'akademik', label: 'Akademik', icon: GraduationCap },
-        { id: 'ortu', label: 'Informasi Wali', icon: Users }
-      ];
-
-      return (
-        <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
-          <div className="flex px-4 lg:px-8 border-b border-slate-200 space-x-2 lg:space-x-8 bg-white pt-4 overflow-x-auto no-scrollbar">
-            {tabs.map(tab => (
-              <button
-                key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 pb-4 border-b-2 transition-colors whitespace-nowrap px-2 ${
-                  activeTab === tab.id ? 'border-emerald-600 text-emerald-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium'
-                }`}
-              >
-                <tab.icon size={18} /><span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 lg:p-8">
-            {activeTab === 'data-santri' && (
-              <div className="max-w-5xl space-y-6 lg:space-y-8 animate-fade-in">
-                 <div>
-                  <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">Identitas Utama</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <InfoItem label="NIPD" value={santri.nipd} />
-                    <InfoItem label="NISN" value={santri.nisn} />
-                    <InfoItem label="Nama Lengkap" value={santri.namaLengkap} />
-                    <InfoItem label="Jenis Kelamin" value={santri.jenisKelamin} />
-                    <InfoItem label="Tempat, Tgl Lahir" value={santri.ttl} />
-                    <InfoItem label="NIK" value={santri.nik} />
-                    <InfoItem label="Agama" value={santri.agama} />
-                    <InfoItem label="Tahun Masuk" value={santri.tahunMasuk} />
-                    <InfoItem label="Status Dapodik" value={santri.dapodik} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'ortu' && (
-              <div className="max-w-5xl space-y-6 animate-fade-in">
-                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Alamat & Kontak Santri</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="col-span-1 lg:col-span-3"><InfoItem label="Alamat Lengkap" value={santri.kontak?.alamat} /></div>
-                    <InfoItem label="Desa" value={santri.kontak?.desa} />
-                    <InfoItem label="Kecamatan" value={santri.kontak?.kecamatan} />
-                    <InfoItem label="No WA Santri" value={santri.kontak?.wa} />
-                  </div>
-                </div>
-                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                      <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Ayah</h3>
-                      <div className="grid grid-cols-2 gap-5">
-                        <div className="col-span-2"><InfoItem label="Nama Lengkap" value={santri.keluarga?.ayah?.nama} /></div>
-                        <div className="col-span-2"><InfoItem label="Pekerjaan" value={santri.keluarga?.ayah?.pekerjaan} /></div>
-                        <div className="col-span-2"><InfoItem label="Nomor WA" value={santri.keluarga?.ayah?.hp} /></div>
-                      </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                      <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Ibu</h3>
-                      <div className="grid grid-cols-2 gap-5">
-                        <div className="col-span-2"><InfoItem label="Nama Lengkap" value={santri.keluarga?.ibu?.nama} /></div>
-                        <div className="col-span-2"><InfoItem label="Pekerjaan" value={santri.keluarga?.ibu?.pekerjaan} /></div>
-                        <div className="col-span-2"><InfoItem label="Nomor WA" value={santri.keluarga?.ibu?.hp} /></div>
-                      </div>
-                    </div>
-                 </div>
-              </div>
-            )}
-
-            {activeTab === 'akademik' && (
-              <div className="max-w-5xl space-y-6 animate-fade-in">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Sekolah Asal</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                     <InfoItem label="Nama Sekolah Asal" value={santri.asalSekolah?.nama} />
-                     <InfoItem label="NPSN" value={santri.asalSekolah?.npsn} />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    function DetailPengajarTabs({ pengajar }) {
-      return (
-        <div className="flex-1 flex flex-col bg-slate-50 p-8 overflow-hidden">
-          <p className="text-slate-500">Detail tenaga pengajar (WIP)...</p>
-        </div>
-      );
-    }
-
-    function InfoItem({ label, value }) {
-      return (
-        <div className="flex flex-col">
-          <span className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">{label}</span>
-          <span className="text-sm font-bold text-slate-800">{value || '-'}</span>
-        </div>
-      );
-    }
-
-    // Render Aplikasi
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
