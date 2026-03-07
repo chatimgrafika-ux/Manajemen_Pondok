@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Manajemen Santri | Yayasan Hidayatullah</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Phosphor Icons (Pengganti Lucide untuk versi HTML Standalone) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel untuk kompilasi JSX di Browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Custom Styles untuk Animasi & Scrollbar -->
+  <style>
+    /* Sembunyikan Scrollbar tapi tetap bisa di-scroll */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Animasi Kustom yang menggantikan tailwindcss-animate plugin */
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    .animate-fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
+    .animate-slide-in-right { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-zoom-in { animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-hidden">
+  
+  <!-- Tempat aplikasi React akan di-render -->
+  <div id="root"></div>
+
+  <!-- Script Utama (React) -->
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
+
+    // ==========================================
+    // ICON WRAPPERS (Menggunakan Phosphor Icons)
+    // ==========================================
+    const IconWrapper = ({ name, size = 20, className = '' }) => (
+      <i className={`ph ${name} ${className}`} style={{ fontSize: size }}></i>
+    );
+    const Users = (props) => <IconWrapper name="ph-users" {...props} />;
+    const LayoutDashboard = (props) => <IconWrapper name="ph-squares-four" {...props} />;
+    const Wallet = (props) => <IconWrapper name="ph-wallet" {...props} />;
+    const Settings = (props) => <IconWrapper name="ph-gear" {...props} />;
+    const Search = (props) => <IconWrapper name="ph-magnifying-glass" {...props} />;
+    const Filter = (props) => <IconWrapper name="ph-funnel" {...props} />;
+    const ChevronRight = (props) => <IconWrapper name="ph-caret-right" {...props} />;
+    const UserCircle = (props) => <IconWrapper name="ph-user-circle" {...props} />;
+    const FileText = (props) => <IconWrapper name="ph-file-text" {...props} />;
+    const MapPin = (props) => <IconWrapper name="ph-map-pin" {...props} />;
+    const GraduationCap = (props) => <IconWrapper name="ph-graduation-cap" {...props} />;
+    const CreditCard = (props) => <IconWrapper name="ph-credit-card" {...props} />;
+    const X = (props) => <IconWrapper name="ph-x" {...props} />;
+    const CheckCircle2 = (props) => <IconWrapper name="ph-check-circle" {...props} />;
+    const Clock = (props) => <IconWrapper name="ph-clock" {...props} />;
+    const FileCheck = (props) => <IconWrapper name="ph-file-check" {...props} />;
+    const FileX = (props) => <IconWrapper name="ph-file-x" {...props} />;
+    const BookOpen = (props) => <IconWrapper name="ph-book-open" {...props} />;
+    const Award = (props) => <IconWrapper name="ph-medal" {...props} />;
+    const School = (props) => <IconWrapper name="ph-buildings" {...props} />;
+    const Briefcase = (props) => <IconWrapper name="ph-briefcase" {...props} />;
+    const Loader2 = (props) => <IconWrapper name="ph-spinner ph-spin" {...props} />;
+    const Menu = (props) => <IconWrapper name="ph-list" {...props} />;
+    const AlertTriangle = (props) => <IconWrapper name="ph-warning" {...props} />;
+    const Info = (props) => <IconWrapper name="ph-info" {...props} />;
+
+    // ==========================================
+    // MOCK DATA (Gantikan dengan data dari API/DB saat produksi)
+    // ==========================================
+    const mockSantri = [
+      {
+        id: "SD-20250002",
+        namaLengkap: "Ameera Ayatul Yamania",
+        nipd: "-", nisn: "-", status: "Aktif", jenjang: "SD",
+        halaqoh: "-", dapodik: "Belum Terdaftar", musyrif: "-",
+        tahunMasuk: "2025", registrasi: "Belum Selesai", kelas: "I - A",
+        sppBulanan: "Rp 350.000", jenisKelamin: "PUTRI", ttl: "- / -", nik: "-", agama: "Islam",
+        kontak: { wa: "-", email: "-", alamat: "-", desa: "-", kecamatan: "-", kabupaten: "-" },
+        asalSekolah: { nama: "-", npsn: "-", alamat: "-", kecamatan: "-", kabupaten: "-", provinsi: "-" },
+        fisik: { bb: "-", tb: "-", baju: "-", celana: "-", topi: "-" },
+        keluarga: {
+          anakKe: "-", jumlahSaudara: "-", tinggalBersama: "-",
+          ayah: { nama: "-", ttl: "-", nik: "-", pekerjaan: "-", pendidikan: "-", hp: "-", penghasilan: "-" },
+          ibu: { nama: "-", ttl: "-", nik: "-", pekerjaan: "-", pendidikan: "-", hp: "-", penghasilan: "-" },
+          wali: { nama: "-", ttl: "-", nik: "-", pekerjaan: "-", pendidikan: "-", hp: "-", penghasilan: "-" }
+        },
+        berkas: { ijazah: false, foto: false, akte: false, kk: false, sertifikat: false, sktm: false },
+        tahfizh: { juz: "Juz 30 & 29", suratTerakhir: "Al-Mulk", kualitas: "Jayyid Jiddan", prestasi: "Juara Harapan 1 MHQ Tingkat Yayasan" },
+        pembayaran: [
+          { bulanKe: 1, tanggal: "8/8/2025", nominal: "Rp350.000", status: "Lunas" }
+        ]
+      }
+    ];
+
+    const mockKelas = [
+      { id: "KL-01", nama: "I - A", jenjang: "SD", waliKelas: "Ustadzah Fatimah", jumlahSantri: 28 },
+      { id: "KL-02", nama: "I - B", jenjang: "SD", waliKelas: "Ustadzah Aisyah", jumlahSantri: 26 },
+      { id: "KL-03", nama: "VII - PUTRA", jenjang: "SMP", waliKelas: "Ustadz Ali", jumlahSantri: 32 },
+    ];
+
+    const mockHalaqoh = [
+      { id: "HL-01", nama: "Halaqoh Utsman", jenjang: "SD", musyrif: "Abdillah A Samsudin", jumlahSantri: 10 },
+      { id: "HL-02", nama: "Halaqoh Ali", jenjang: "SD", musyrif: "Ustadz Umar", jumlahSantri: 12 },
+      { id: "HL-03", nama: "Halaqoh Abu Bakar", jenjang: "SMP", musyrif: "Ustadz Hamzah", jumlahSantri: 15 },
+    ];
+
+    const mockPengajar = [
+      {
+        id: "PPTQH0001",
+        nuptk: "-", namaLengkap: "Abdillah A Samsudin", jenisKelamin: "Laki-Laki", nik: "-", umur: "-", ttl: "- / -",
+        kontak: { wa: "082248471007", email: "abdillahsamsudin6@gmail.com", alamat: "-", desa: "-", kelurahan: "-", kecamatan: "-", kota: "-" },
+        kepegawaian: { jabatan: "Guru / Musyrif", sk: "-", guruMapel: "-", musyrifKamar: "-", musyrifHalaqoh: "Halaqoh Utsman" },
+        profil: { hobi: "-", keahlian: "-" },
+        pendidikan: { sd: "-", smp: "-", sma: "-", s1: "-", s2: "-", s3: "-" }
+      }
+    ];
+
+    const GOOGLE_SCRIPT_URL = "URL_WEB_APP_ANDA_DISINI";
+
+    // ==========================================
+    // MAIN COMPONENT
+    // ==========================================
+    function App() {
+      // Navigation & UI State
+      const [activeMenu, setActiveMenu] = useState('data-santri');
+      const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+      const [searchQuery, setSearchQuery] = useState('');
+      
+      // Selection State
+      const [selectedSantri, setSelectedSantri] = useState(null);
+      const [selectedPengajar, setSelectedPengajar] = useState(null);
+      
+      // Data State
+      const [dataSantri, setDataSantri] = useState(mockSantri);
+      const [dataKelas, setDataKelas] = useState(mockKelas);
+      const [dataHalaqoh, setDataHalaqoh] = useState(mockHalaqoh);
+      const [dataPengajar, setDataPengajar] = useState(mockPengajar);
+      const [isLoading, setIsLoading] = useState(false);
+
+      // Custom Dialog State
+      const [dialog, setDialog] = useState({ isOpen: false, type: 'info', title: '', message: '', onConfirm: null });
+      const [formModal, setFormModal] = useState({ isOpen: false, title: '' });
+
+      const showMessage = (title, message, type = 'info') => setDialog({ isOpen: true, type, title, message, onConfirm: null });
+      const showConfirm = (title, message, onConfirm) => setDialog({ isOpen: true, type: 'confirm', title, message, onConfirm });
+      const closeDialog = () => setDialog(prev => ({ ...prev, isOpen: false }));
+
+      // --- API / CRUD Handlers ---
+      const fetchData = async () => {
+        setIsLoading(true);
+        try {
+          if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwMay5nhbwMpe8tLYJNi8p3vytyxYb50cO37rGm1Fqmyz7Um8vMbvwltP05xNdJrGla2w/exec") {
+            setTimeout(() => setIsLoading(false), 800);
+            return;
+          }
+          const response = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=Database Utama`);
+          const result = await response.json();
+          if (result.status === 'success') {
+            console.log("Data tersinkronisasi.");
+          }
+        } catch (error) {
+          showMessage("Error Sinkronisasi", "Gagal mengambil data dari server. Periksa koneksi Anda.", "error");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        fetchData();
+      }, []);
+
+      const handleAddData = async (sheetName, newData) => {
+        setIsLoading(true);
+        setFormModal({ isOpen: false, title: '' }); 
+        try {
+          if (GOOGLE_SCRIPT_URL !== "URL_WEB_APP_ANDA_DISINI") {
+            await fetch(GOOGLE_SCRIPT_URL, {
+              method: "POST", body: JSON.stringify({ action: "add", sheet: sheetName, data: newData })
+            });
+          }
+          showMessage("Berhasil", `${sheetName} baru berhasil ditambahkan!`, "success");
+          fetchData();
+        } catch (error) {
+          showMessage("Gagal", "Gagal menambahkan data.", "error");
+        }
+        setIsLoading(false);
+      };
+
+      const handleDeleteData = (sheetName, id) => {
+        showConfirm("Hapus Data", `Anda yakin ingin menghapus data ${id} dari ${sheetName}? Tindakan ini tidak dapat dibatalkan.`, async () => {
+          setIsLoading(true);
+          try {
+            if (GOOGLE_SCRIPT_URL !== "URL_WEB_APP_ANDA_DISINI") {
+              await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST", body: JSON.stringify({ action: "delete", sheet: sheetName, id: id })
+              });
+            }
+            showMessage("Terhapus", "Data berhasil dihapus dari sistem.", "success");
+            fetchData();
+          } catch (error) {
+            showMessage("Gagal", "Gagal menghapus data.", "error");
+          }
+          setIsLoading(false);
+        });
+      };
+
+      // --- Memos & Filters ---
+      const menuTitles = {
+        'data-santri': 'Data Santri', 'akademik': 'Akademik', 'ortu': 'Informasi Orang Tua',
+        'tahfizh': 'Tahfizh & Prestasi', 'keuangan': 'Keuangan', 'kelas-halaqoh': 'Manajemen Kelas & Halaqoh',
+        'pengajar': 'Manajemen Pengajar'
+      };
+
+      const filteredSantri = useMemo(() => {
+        return dataSantri.filter(s => s.namaLengkap.toLowerCase().includes(searchQuery.toLowerCase()) || s.id.toLowerCase().includes(searchQuery.toLowerCase()));
+      }, [searchQuery, dataSantri]);
+
+      const filteredPengajar = useMemo(() => {
+        return dataPengajar.filter(p => p.namaLengkap.toLowerCase().includes(searchQuery.toLowerCase()) || p.id.toLowerCase().includes(searchQuery.toLowerCase()));
+      }, [searchQuery, dataPengajar]);
+
+      // --- Sub-components ---
+      const SidebarItem = ({ icon: Icon, label, id }) => (
+        <button 
+          onClick={() => { 
+            setActiveMenu(id); setSelectedSantri(null); setSelectedPengajar(null); 
+            if (window.innerWidth < 1024) setIsSidebarOpen(false); 
+          }}
+          className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+            activeMenu === id ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+          }`}
+        >
+          <Icon size={20} />
+          <span className="font-medium">{label}</span>
+        </button>
+      );
+
+      return (
+        <div className="flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden">
+          
+          {/* MOBILE OVERLAY */}
+          {isSidebarOpen && (
+            <div 
+              className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
+
+          {/* SIDEBAR */}
+          <aside className={`fixed lg:static inset-y-0 left-0 w-72 bg-slate-900 text-white p-6 flex flex-col shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+            <div className="flex items-center justify-between mb-10">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center font-bold text-xl shadow-lg shadow-emerald-600/30">
+                  YH
+                </div>
+                <div>
+                  <h1 className="font-bold text-sm tracking-wide">Yayasan Hidayatullah</h1>
+                  <p className="text-xs text-slate-400">Ternate</p>
+                </div>
+              </div>
+              <button className="lg:hidden text-slate-400 hover:text-white" onClick={() => setIsSidebarOpen(false)}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <nav className="space-y-2 flex-1 overflow-y-auto no-scrollbar pb-6">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-2">Database Utama</p>
+              <SidebarItem icon={Users} label="Data Santri" id="data-santri" />
+              <SidebarItem icon={GraduationCap} label="Akademik" id="akademik" />
+              <SidebarItem icon={UserCircle} label="Informasi Wali" id="ortu" />
+              
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 mt-6 px-2">Monitoring</p>
+              <SidebarItem icon={Award} label="Tahfizh & Prestasi" id="tahfizh" />
+              <SidebarItem icon={Wallet} label="Keuangan SPP" id="keuangan" />
+              
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 mt-6 px-2">Manajemen Internal</p>
+              <SidebarItem icon={School} label="Kelas & Halaqoh" id="kelas-halaqoh" />
+              <SidebarItem icon={Briefcase} label="Tenaga Pengajar" id="pengajar" />
+            </nav>
+
+            <div className="mt-auto pt-6 border-t border-slate-800">
+              <div className="flex items-center space-x-3 bg-slate-800 p-3 rounded-xl cursor-pointer hover:bg-slate-700 transition-colors">
+                <div className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center overflow-hidden">
+                  <img src={`https://ui-avatars.com/api/?name=Admin+Pusat&background=10b981&color=fff`} alt="Admin" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Admin Pusat</p>
+                  <p className="text-xs text-slate-400">Superadmin</p>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* MAIN CONTENT */}
+          <main className="flex-1 flex flex-col w-full h-full relative overflow-hidden">
+            {/* HEADER */}
+            <header className="bg-white border-b border-slate-200 h-20 flex-shrink-0 flex items-center justify-between px-4 lg:px-8 shadow-sm">
+              <div className="flex items-center space-x-4">
+                <button className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg" onClick={() => setIsSidebarOpen(true)}>
+                  <Menu size={24} />
+                </button>
+                <h2 className="text-xl lg:text-2xl font-bold text-slate-800 capitalize hidden sm:block">
+                  {menuTitles[activeMenu]}
+                </h2>
+              </div>
+              
+              <div className="flex items-center space-x-3 lg:space-x-4 w-full sm:w-auto justify-end">
+                {isLoading && (
+                  <div className="hidden md:flex items-center text-emerald-600 mr-2 bg-emerald-50 px-3 py-1.5 rounded-full">
+                    <Loader2 className="animate-spin mr-2" size={16} />
+                    <span className="text-xs font-bold">Menyinkronkan...</span>
+                  </div>
+                )}
+                
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input 
+                    type="text" 
+                    placeholder="Cari data..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm transition-all"
+                  />
+                </div>
+                
+                <button 
+                  onClick={() => setFormModal({ isOpen: true, title: `Tambah ${menuTitles[activeMenu]}` })}
+                  className="hidden sm:flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow-emerald-600/30 whitespace-nowrap"
+                >
+                  + Tambah Baru
+                </button>
+              </div>
+            </header>
+
+            {/* CONTENT AREA */}
+            <div className="flex-1 overflow-auto p-4 lg:p-8 bg-slate-50 relative">
+              
+              {/* VIEW: MANAJEMEN KELAS & HALAQOH */}
+              {activeMenu === 'kelas-halaqoh' && !selectedSantri && (
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-fade-in">
+                  {/* Box Daftar Kelas */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[600px]">
+                    <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-white">
+                      <h3 className="text-lg font-bold text-slate-800 flex items-center">
+                        <School size={20} className="mr-2 text-blue-600"/> Daftar Kelas
+                      </h3>
+                      <button onClick={() => setFormModal({ isOpen: true, title: 'Tambah Kelas Baru' })} className="text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors">
+                        + Kelas
+                      </button>
+                    </div>
+                    <div className="overflow-x-auto overflow-y-auto flex-1 p-2">
+                      <table className="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                          <tr className="border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
+                            <th className="p-4 font-semibold sticky top-0 bg-white z-10">Nama Kelas</th>
+                            <th className="p-4 font-semibold sticky top-0 bg-white z-10">Jenjang</th>
+                            <th className="p-4 font-semibold sticky top-0 bg-white z-10">Wali Kelas</th>
+                            <th className="p-4 font-semibold text-center sticky top-0 bg-white z-10">Santri</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dataKelas.map((kelas) => (
+                            <tr key={kelas.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                              <td className="p-4 text-sm font-bold text-slate-800">{kelas.nama}</td>
+                              <td className="p-4 text-sm text-slate-600">{kelas.jenjang}</td>
+                              <td className="p-4 text-sm text-slate-600">{kelas.waliKelas}</td>
+                              <td className="p-4 text-sm font-medium text-center">
+                                <span className="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">{kelas.jumlahSantri}</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Box Daftar Halaqoh */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[600px]">
+                    <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-white">
+                      <h3 className="text-lg font-bold text-slate-800 flex items-center">
+                        <Users size={20} className="mr-2 text-emerald-600"/> Daftar Halaqoh
+                      </h3>
+                      <button onClick={() => setFormModal({ isOpen: true, title: 'Tambah Halaqoh Baru' })} className="text-emerald-600 hover:bg-emerald-50 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors">
+                        + Halaqoh
+                      </button>
+                    </div>
+                    <div className="overflow-x-auto overflow-y-auto flex-1 p-2">
+                      <table className="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                          <tr className="border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
+                            <th className="p-4 font-semibold sticky top-0 bg-white z-10">Nama Halaqoh</th>
+                            <th className="p-4 font-semibold sticky top-0 bg-white z-10">Jenjang</th>
+                            <th className="p-4 font-semibold sticky top-0 bg-white z-10">Musyrif</th>
+                            <th className="p-4 font-semibold text-center sticky top-0 bg-white z-10">Santri</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dataHalaqoh.map((hlq) => (
+                            <tr key={hlq.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                              <td className="p-4 text-sm font-bold text-slate-800">{hlq.nama}</td>
+                              <td className="p-4 text-sm text-slate-600">{hlq.jenjang}</td>
+                              <td className="p-4 text-sm text-slate-600">{hlq.musyrif}</td>
+                              <td className="p-4 text-sm font-medium text-center">
+                                <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">{hlq.jumlahSantri}</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW: TABEL UTAMA DINAMIS */}
+              {activeMenu !== 'kelas-halaqoh' && activeMenu !== 'pengajar' && !selectedSantri && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
+                      <thead>
+                        <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
+                          {activeMenu === 'data-santri' && (
+                            <React.Fragment>
+                              <th className="p-5 font-semibold">ID / NIPD</th>
+                              <th className="p-5 font-semibold">Nama Lengkap</th>
+                              <th className="p-5 font-semibold">Kelas & Halaqoh</th>
+                              <th className="p-5 font-semibold">Status</th>
+                            </React.Fragment>
+                          )}
+                          {activeMenu === 'akademik' && (
+                            <React.Fragment>
+                              <th className="p-5 font-semibold">Nama Lengkap</th>
+                              <th className="p-5 font-semibold">NISN / Dapodik</th>
+                              <th className="p-5 font-semibold">Kelas & Halaqoh</th>
+                              <th className="p-5 font-semibold">Asal Sekolah</th>
+                            </React.Fragment>
+                          )}
+                          {activeMenu === 'ortu' && (
+                            <React.Fragment>
+                              <th className="p-5 font-semibold">Nama Santri</th>
+                              <th className="p-5 font-semibold">Data Ayah (WA)</th>
+                              <th className="p-5 font-semibold">Data Ibu (WA)</th>
+                              <th className="p-5 font-semibold">Wali</th>
+                            </React.Fragment>
+                          )}
+                          {activeMenu === 'tahfizh' && (
+                            <React.Fragment>
+                              <th className="p-5 font-semibold">Nama Lengkap</th>
+                              <th className="p-5 font-semibold">Kelas / Halaqoh</th>
+                              <th className="p-5 font-semibold">Capaian Hafalan</th>
+                              <th className="p-5 font-semibold">Prestasi Terakhir</th>
+                            </React.Fragment>
+                          )}
+                          {activeMenu === 'keuangan' && (
+                            <React.Fragment>
+                              <th className="p-5 font-semibold">ID / NIPD</th>
+                              <th className="p-5 font-semibold">Nama Lengkap</th>
+                              <th className="p-5 font-semibold">SPP Bulanan</th>
+                              <th className="p-5 font-semibold">Status Pembayaran</th>
+                            </React.Fragment>
+                          )}
+                          <th className="p-5 font-semibold text-center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredSantri.map((santri) => (
+                          <tr key={santri.id} className="border-b border-slate-100 hover:bg-emerald-50/30 transition-colors group">
+                            {activeMenu === 'data-santri' && (
+                              <React.Fragment>
+                                <td className="p-5 text-sm font-medium text-slate-500">{santri.id}</td>
+                                <td className="p-5 text-sm">
+                                  <p className="font-bold text-slate-800">{santri.namaLengkap}</p>
+                                  <p className="text-xs text-slate-500 mt-0.5">{santri.jenjang} • {santri.jenisKelamin}</p>
+                                </td>
+                                <td className="p-5 text-sm text-slate-600">
+                                  <span className="block font-medium">{santri.kelas}</span>
+                                  <span className="text-xs text-slate-500">{santri.halaqoh}</span>
+                                </td>
+                                <td className="p-5 text-sm">
+                                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                                    santri.status === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'
+                                  }`}>
+                                    {santri.status}
+                                  </span>
+                                </td>
+                              </React.Fragment>
+                            )}
+                            {activeMenu === 'akademik' && (
+                              <React.Fragment>
+                                <td className="p-5 text-sm font-bold text-slate-800">{santri.namaLengkap}</td>
+                                <td className="p-5 text-sm text-slate-600">
+                                  <span className="block font-medium">NISN: {santri.nisn}</span>
+                                  <span className="text-xs text-slate-500">{santri.dapodik}</span>
+                                </td>
+                                <td className="p-5 text-sm text-slate-600">
+                                  <span className="block">{santri.kelas}</span>
+                                  <span className="text-xs text-slate-500">{santri.halaqoh}</span>
+                                </td>
+                                <td className="p-5 text-sm text-slate-600">{santri.asalSekolah?.nama || '-'}</td>
+                              </React.Fragment>
+                            )}
+                            {activeMenu === 'ortu' && (
+                              <React.Fragment>
+                                <td className="p-5 text-sm font-bold text-slate-800">{santri.namaLengkap}</td>
+                                <td className="p-5 text-sm text-slate-600">
+                                  <span className="block font-medium text-slate-800">{santri.keluarga?.ayah?.nama || '-'}</span>
+                                  <span className="text-xs text-blue-600">{santri.keluarga?.ayah?.hp || '-'}</span>
+                                </td>
+                                <td className="p-5 text-sm text-slate-600">
+                                  <span className="block font-medium text-slate-800">{santri.keluarga?.ibu?.nama || '-'}</span>
+                                  <span className="text-xs text-blue-600">{santri.keluarga?.ibu?.hp || '-'}</span>
+                                </td>
+                                <td className="p-5 text-sm text-slate-600">{santri.keluarga?.wali?.nama || '-'}</td>
+                              </React.Fragment>
+                            )}
+                            {activeMenu === 'tahfizh' && (
+                              <React.Fragment>
+                                <td className="p-5 text-sm font-bold text-slate-800">{santri.namaLengkap}</td>
+                                <td className="p-5 text-sm text-slate-600">
+                                  <span className="block">{santri.kelas}</span>
+                                  <span className="text-xs text-slate-500">{santri.halaqoh}</span>
+                                </td>
+                                <td className="p-5 text-sm font-bold text-emerald-600">{santri.tahfizh?.juz || '-'}</td>
+                                <td className="p-5 text-sm text-slate-600">{santri.tahfizh?.prestasi || '-'}</td>
+                              </React.Fragment>
+                            )}
+                            {activeMenu === 'keuangan' && (
+                              <React.Fragment>
+                                <td className="p-5 text-sm font-medium text-slate-500">{santri.id}</td>
+                                <td className="p-5 text-sm font-bold text-slate-800">{santri.namaLengkap}</td>
+                                <td className="p-5 text-sm font-medium text-slate-700">{santri.sppBulanan}</td>
+                                <td className="p-5 text-sm">
+                                  {santri.pembayaran && santri.pembayaran.length > 0 ? (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                      <CheckCircle2 size={14} className="mr-1" /> {santri.pembayaran[0].status}
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                      <Clock size={14} className="mr-1" /> Belum
+                                    </span>
+                                  )}
+                                </td>
+                              </React.Fragment>
+                            )}
+                            <td className="p-5 text-center">
+                              <button 
+                                onClick={() => setSelectedSantri(santri)}
+                                className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-xl transition-all inline-flex sm:opacity-0 group-hover:opacity-100"
+                              >
+                                <ChevronRight size={20} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredSantri.length === 0 && (
+                          <tr>
+                            <td colSpan="6" className="p-12 text-center text-slate-500">
+                              <div className="flex flex-col items-center justify-center">
+                                <Users size={40} className="text-slate-300 mb-3" />
+                                <p className="font-medium text-slate-600">Tidak ada data santri ditemukan.</p>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW: TABEL PENGAJAR */}
+              {activeMenu === 'pengajar' && !selectedPengajar && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
+                      <thead>
+                        <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
+                          <th className="p-5 font-semibold">ID / NUPTK</th>
+                          <th className="p-5 font-semibold">Nama Lengkap</th>
+                          <th className="p-5 font-semibold">Jabatan & Tugas</th>
+                          <th className="p-5 font-semibold">Kontak</th>
+                          <th className="p-5 font-semibold text-center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredPengajar.map((pengajar) => (
+                          <tr key={pengajar.id} className="border-b border-slate-100 hover:bg-emerald-50/30 transition-colors group">
+                            <td className="p-5 text-sm font-medium text-slate-500">
+                              <span className="block">{pengajar.id}</span>
+                              <span className="text-xs text-slate-400">NUPTK: {pengajar.nuptk}</span>
+                            </td>
+                            <td className="p-5 text-sm font-bold text-slate-800">{pengajar.namaLengkap}</td>
+                            <td className="p-5 text-sm text-slate-600">
+                              <span className="block font-medium">{pengajar.kepegawaian.jabatan}</span>
+                              <span className="text-xs text-emerald-600 font-semibold">{pengajar.kepegawaian.musyrifHalaqoh}</span>
+                            </td>
+                            <td className="p-5 text-sm text-slate-600">
+                              <span className="block font-medium text-slate-700">{pengajar.kontak.wa}</span>
+                              <span className="text-xs text-slate-500">{pengajar.kontak.email}</span>
+                            </td>
+                            <td className="p-5 text-center">
+                              <button 
+                                onClick={() => setSelectedPengajar(pengajar)}
+                                className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-xl transition-all inline-flex sm:opacity-0 group-hover:opacity-100"
+                              >
+                                <ChevronRight size={20} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredPengajar.length === 0 && (
+                          <tr>
+                            <td colSpan="5" className="p-12 text-center text-slate-500">
+                              <div className="flex flex-col items-center justify-center">
+                                <Briefcase size={40} className="text-slate-300 mb-3" />
+                                <p className="font-medium text-slate-600">Tidak ada data pengajar ditemukan.</p>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW: DETAIL SANTRI (SLIDE IN OVERLAY) */}
+              {selectedSantri && (
+                <div className="absolute inset-0 bg-white z-20 flex flex-col animate-slide-in-right rounded-tl-2xl shadow-2xl overflow-hidden">
+                  <div className="p-4 lg:p-8 border-b border-slate-200 flex items-start justify-between bg-white relative z-10">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                      <div className="w-20 h-20 lg:w-24 lg:h-24 bg-slate-100 rounded-2xl shadow-inner flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                        <UserCircle size={60} className="text-slate-300" />
+                      </div>
+                      <div>
+                        <div className="flex flex-wrap items-center gap-3 mb-1">
+                          <h2 className="text-2xl lg:text-3xl font-bold text-slate-800">{selectedSantri.namaLengkap}</h2>
+                          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider">
+                            {selectedSantri.status}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-y-2 gap-x-4 text-sm text-slate-500 mt-2 font-medium">
+                          <span className="flex items-center"><MapPin size={16} className="mr-1.5 text-slate-400"/> ID: {selectedSantri.id}</span>
+                          <span className="flex items-center"><GraduationCap size={16} className="mr-1.5 text-slate-400"/> {selectedSantri.kelas}</span>
+                          <span className="flex items-center"><Users size={16} className="mr-1.5 text-slate-400"/> {selectedSantri.halaqoh}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                       <button onClick={() => handleDeleteData("Database Utama", selectedSantri.id)} className="hidden sm:block p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors" title="Hapus Data">
+                         <AlertTriangle size={20} />
+                       </button>
+                       <button onClick={() => setSelectedSantri(null)} className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors bg-white border border-slate-200 shadow-sm">
+                         <X size={24} />
+                       </button>
+                    </div>
+                  </div>
+                  <DetailTabs santri={selectedSantri} />
+                </div>
+              )}
+
+              {/* VIEW: DETAIL PENGAJAR (SLIDE IN OVERLAY) */}
+              {selectedPengajar && (
+                <div className="absolute inset-0 bg-white z-20 flex flex-col animate-slide-in-right rounded-tl-2xl shadow-2xl overflow-hidden">
+                  <div className="p-4 lg:p-8 border-b border-slate-200 flex items-start justify-between bg-white relative z-10">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                      <div className="w-20 h-20 lg:w-24 lg:h-24 bg-slate-100 rounded-2xl shadow-inner flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                        <Briefcase size={60} className="text-slate-300" />
+                      </div>
+                      <div>
+                        <div className="flex flex-wrap items-center gap-3 mb-1">
+                          <h2 className="text-2xl lg:text-3xl font-bold text-slate-800">{selectedPengajar.namaLengkap}</h2>
+                          <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 uppercase tracking-wider">
+                            {selectedPengajar.kepegawaian.jabatan || 'Pengajar'}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-y-2 gap-x-4 text-sm text-slate-500 mt-2 font-medium">
+                          <span className="flex items-center"><MapPin size={16} className="mr-1.5 text-slate-400"/> ID: {selectedPengajar.id}</span>
+                          <span className="flex items-center"><UserCircle size={16} className="mr-1.5 text-slate-400"/> L/P: {selectedPengajar.jenisKelamin}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleDeleteData("Pengajar", selectedPengajar.id)} className="hidden sm:block p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors" title="Hapus Data">
+                         <AlertTriangle size={20} />
+                       </button>
+                      <button onClick={() => setSelectedPengajar(null)} className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors bg-white border border-slate-200 shadow-sm">
+                        <X size={24} />
+                      </button>
+                    </div>
+                  </div>
+                  <DetailPengajarTabs pengajar={selectedPengajar} />
+                </div>
+              )}
+
+            </div>
+          </main>
+
+          {/* ========================================= */}
+          {/* CUSTOM DIALOG / MESSAGE BOX */}
+          {/* ========================================= */}
+          {dialog.isOpen && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-zoom-in">
+                <div className={`p-6 border-b ${dialog.type === 'error' ? 'border-red-100 bg-red-50' : dialog.type === 'confirm' ? 'border-amber-100 bg-amber-50' : 'border-emerald-100 bg-emerald-50'}`}>
+                  <div className="flex items-center space-x-3">
+                    {dialog.type === 'error' ? <AlertTriangle className="text-red-500" size={24} /> : 
+                     dialog.type === 'confirm' ? <AlertTriangle className="text-amber-500" size={24} /> : 
+                     <CheckCircle2 className="text-emerald-500" size={24} />}
+                    <h3 className={`text-lg font-bold ${dialog.type === 'error' ? 'text-red-800' : dialog.type === 'confirm' ? 'text-amber-800' : 'text-emerald-800'}`}>
+                      {dialog.title}
+                    </h3>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <p className="text-slate-600">{dialog.message}</p>
+                </div>
+                <div className="p-4 border-t border-slate-100 flex justify-end space-x-3 bg-slate-50">
+                  {dialog.type === 'confirm' && (
+                    <button onClick={closeDialog} className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-200 transition-colors">
+                      Batal
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => {
+                      if (dialog.onConfirm) dialog.onConfirm();
+                      closeDialog();
+                    }} 
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold text-white transition-colors shadow-sm ${
+                      dialog.type === 'error' ? 'bg-red-600 hover:bg-red-700' : 
+                      dialog.type === 'confirm' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
+                    }`}
+                  >
+                    {dialog.type === 'confirm' ? 'Ya, Lanjutkan' : 'Mengerti'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================= */}
+          {/* FORM MODAL PLACEHOLDER */}
+          {/* ========================================= */}
+          {formModal.isOpen && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-zoom-in">
+                <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-white">
+                   <h3 className="text-xl font-bold text-slate-800">{formModal.title}</h3>
+                   <button onClick={() => setFormModal({isOpen: false, title: ''})} className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-2 rounded-xl">
+                     <X size={20} />
+                   </button>
+                </div>
+                <div className="p-8 overflow-y-auto flex-1 flex flex-col items-center justify-center text-center bg-slate-50">
+                    <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+                       <Settings size={32} />
+                    </div>
+                    <h4 className="text-lg font-bold text-slate-800 mb-2">Formulir Pendaftaran Data Dinamis</h4>
+                    <p className="text-slate-500 max-w-md text-sm leading-relaxed">
+                       Untuk membuat fungsi input benar-benar bekerja, Anda perlu memetakan form input HTML yang sesuai dengan kolom database di area ini.
+                    </p>
+                    <div className="mt-8 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start text-left max-w-md">
+                       <Info className="text-amber-500 shrink-0 mt-0.5 mr-3" size={18} />
+                       <p className="text-amber-800 text-xs font-medium">Klik tombol simpan di bawah untuk melihat simulasi popup konfirmasi sukses.</p>
+                    </div>
+                </div>
+                <div className="p-4 border-t border-slate-200 bg-white flex justify-end space-x-3">
+                   <button onClick={() => setFormModal({isOpen: false, title: ''})} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                      Batal
+                   </button>
+                   <button 
+                      onClick={() => handleAddData("Tabel", { "ID": "NEW-01", "Nama": "Data Simulasi" })} 
+                      className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20 transition-all flex items-center"
+                   >
+                      {isLoading ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                      Simpan Data
+                   </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    // ==========================================
+    // SUB-COMPONENTS DETAILS
+    // ==========================================
+    function DetailTabs({ santri }) {
+      const [activeTab, setActiveTab] = useState('data-santri');
+      const tabs = [
+        { id: 'data-santri', label: 'Data Santri', icon: FileText },
+        { id: 'akademik', label: 'Akademik', icon: GraduationCap },
+        { id: 'ortu', label: 'Informasi Orang Tua', icon: Users },
+        { id: 'tahfizh', label: 'Tahfizh & Prestasi', icon: Award },
+        { id: 'keuangan', label: 'Keuangan', icon: CreditCard },
+      ];
+
+      return (
+        <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+          <div className="flex px-4 lg:px-8 border-b border-slate-200 space-x-2 lg:space-x-8 bg-white pt-4 overflow-x-auto no-scrollbar">
+            {tabs.map(tab => (
+              <button
+                key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center space-x-2 pb-4 border-b-2 transition-colors whitespace-nowrap px-2 ${
+                  activeTab === tab.id ? 'border-emerald-600 text-emerald-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium'
+                }`}
+              >
+                <tab.icon size={18} /><span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8">
+            {activeTab === 'data-santri' && (
+              <div className="max-w-5xl space-y-6 lg:space-y-8 animate-fade-in">
+                 <div>
+                  <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">Identitas Utama</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <InfoItem label="NIPD" value={santri.nipd} />
+                    <InfoItem label="NISN" value={santri.nisn} />
+                    <InfoItem label="Nama Lengkap" value={santri.namaLengkap} />
+                    <InfoItem label="Jenis Kelamin" value={santri.jenisKelamin} />
+                    <InfoItem label="Tempat, Tgl Lahir" value={santri.ttl} />
+                    <InfoItem label="NIK" value={santri.nik} />
+                    <InfoItem label="Agama" value={santri.agama} />
+                    <InfoItem label="Tahun Masuk" value={santri.tahunMasuk} />
+                    <InfoItem label="Status Dapodik" value={santri.dapodik} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">Data Fisik & Seragam</h3>
+                    <div className="grid grid-cols-2 gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                      <InfoItem label="Berat Badan" value={`${santri.fisik?.bb || '-'} Kg`} />
+                      <InfoItem label="Tinggi Badan" value={`${santri.fisik?.tb || '-'} cm`} />
+                      <div className="col-span-2 grid grid-cols-3 gap-4 mt-2 pt-4 border-t border-slate-100">
+                        <InfoItem label="Baju" value={santri.fisik?.baju} />
+                        <InfoItem label="Celana" value={santri.fisik?.celana} />
+                        <InfoItem label="Topi" value={santri.fisik?.topi} />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">Status Domisili Anak</h3>
+                    <div className="grid grid-cols-2 gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-full lg:h-[172px]">
+                      <InfoItem label="Anak Ke" value={santri.keluarga?.anakKe} />
+                      <InfoItem label="Jumlah Saudara" value={santri.keluarga?.jumlahSaudara} />
+                      <div className="col-span-2">
+                        <InfoItem label="Tinggal Bersama" value={santri.keluarga?.tinggalBersama} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'ortu' && (
+              <div className="max-w-5xl space-y-6 animate-fade-in">
+                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Alamat & Kontak Santri</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="col-span-1 lg:col-span-3"><InfoItem label="Alamat Lengkap" value={santri.kontak?.alamat} /></div>
+                    <InfoItem label="Desa" value={santri.kontak?.desa} />
+                    <InfoItem label="Kecamatan" value={santri.kontak?.kecamatan} />
+                    <InfoItem label="Kabupaten/Kota" value={santri.kontak?.kabupaten} />
+                    <InfoItem label="Nomor WA Santri" value={santri.kontak?.wa} />
+                    <InfoItem label="Email" value={santri.kontak?.email} />
+                  </div>
+                </div>
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                      <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Ayah</h3>
+                      <div className="grid grid-cols-2 gap-5">
+                        <div className="col-span-2"><InfoItem label="Nama Lengkap" value={santri.keluarga?.ayah?.nama} /></div>
+                        <div className="col-span-2"><InfoItem label="Tempat, Tgl Lahir" value={santri.keluarga?.ayah?.ttl} /></div>
+                        <InfoItem label="NIK" value={santri.keluarga?.ayah?.nik} />
+                        <InfoItem label="Nomor WA" value={santri.keluarga?.ayah?.hp} />
+                        <InfoItem label="Pendidikan" value={santri.keluarga?.ayah?.pendidikan} />
+                        <InfoItem label="Pekerjaan" value={santri.keluarga?.ayah?.pekerjaan} />
+                      </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                      <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Ibu</h3>
+                      <div className="grid grid-cols-2 gap-5">
+                        <div className="col-span-2"><InfoItem label="Nama Lengkap" value={santri.keluarga?.ibu?.nama} /></div>
+                        <div className="col-span-2"><InfoItem label="Tempat, Tgl Lahir" value={santri.keluarga?.ibu?.ttl} /></div>
+                        <InfoItem label="NIK" value={santri.keluarga?.ibu?.nik} />
+                        <InfoItem label="Nomor WA" value={santri.keluarga?.ibu?.hp} />
+                        <InfoItem label="Pendidikan" value={santri.keluarga?.ibu?.pendidikan} />
+                        <InfoItem label="Pekerjaan" value={santri.keluarga?.ibu?.pekerjaan} />
+                      </div>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {activeTab === 'akademik' && (
+              <div className="max-w-5xl space-y-6 animate-fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Sekolah Asal</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                     <InfoItem label="Nama Sekolah Asal" value={santri.asalSekolah?.nama} />
+                     <InfoItem label="NPSN" value={santri.asalSekolah?.npsn} />
+                     <div className="col-span-1 sm:col-span-2"><InfoItem label="Alamat Sekolah" value={santri.asalSekolah?.alamat} /></div>
+                  </div>
+                </div>
+                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Kelengkapan Berkas</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <BerkasItem label="Ijazah" status={santri.berkas?.ijazah} />
+                    <BerkasItem label="Akte Kelahiran" status={santri.berkas?.akte} />
+                    <BerkasItem label="Kartu Keluarga" status={santri.berkas?.kk} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'tahfizh' && (
+               <div className="max-w-5xl space-y-6 animate-fade-in">
+                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Capaian Hafalan (Tahfizh)</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <InfoItem label="Total Juz" value={santri.tahfizh?.juz} />
+                    <InfoItem label="Surat Terakhir" value={santri.tahfizh?.suratTerakhir} />
+                    <InfoItem label="Kualitas Bacaan" value={santri.tahfizh?.kualitas} />
+                  </div>
+                </div>
+                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center">
+                     <Award size={24} className="text-emerald-500 mr-4 shrink-0" />
+                     <div>
+                        <span className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1 block">Riwayat Prestasi</span>
+                        <p className="text-sm font-bold text-slate-800">{santri.tahfizh?.prestasi || 'Belum ada data prestasi.'}</p>
+                     </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'keuangan' && (
+              <div className="max-w-5xl animate-fade-in">
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                   <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white gap-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-800">Riwayat SPP</h3>
+                        <p className="text-slate-500 text-sm mt-1">Biaya Bulanan: <span className="font-bold text-slate-700">{santri.sppBulanan || '-'}</span></p>
+                      </div>
+                      <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm">
+                        + Input Pembayaran
+                      </button>
+                    </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[600px]">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
+                          <th className="p-4 font-semibold text-center w-24">Bulan Ke</th>
+                          <th className="p-4 font-semibold">Tanggal Bayar</th>
+                          <th className="p-4 font-semibold">Nominal</th>
+                          <th className="p-4 font-semibold">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {santri.pembayaran?.map((pemb, idx) => (
+                          <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
+                            <td className="p-4 text-sm font-bold text-slate-500 text-center">{pemb.bulanKe}</td>
+                            <td className="p-4 text-sm font-semibold text-slate-700">{pemb.tanggal}</td>
+                            <td className="p-4 text-sm font-semibold text-slate-700">{pemb.nominal}</td>
+                            <td className="p-4 text-sm">
+                               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  <CheckCircle2 size={14} className="mr-1" /> Lunas
+                                </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function DetailPengajarTabs({ pengajar }) {
+      const [activeTab, setActiveTab] = useState('profil');
+      const tabs = [
+        { id: 'profil', label: 'Profil & Kontak', icon: UserCircle },
+        { id: 'tugas', label: 'Penugasan & Halaqoh', icon: Briefcase },
+        { id: 'pendidikan', label: 'Riwayat Pendidikan', icon: GraduationCap },
+      ];
+      const halaqohTerkait = mockHalaqoh.filter(h => h.musyrif === pengajar.namaLengkap);
+
+      return (
+        <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+          <div className="flex px-4 lg:px-8 border-b border-slate-200 space-x-2 lg:space-x-8 bg-white pt-4 overflow-x-auto no-scrollbar">
+            {tabs.map(tab => (
+              <button
+                key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center space-x-2 pb-4 border-b-2 transition-colors whitespace-nowrap px-2 ${
+                  activeTab === tab.id ? 'border-emerald-600 text-emerald-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 font-medium'
+                }`}
+              >
+                <tab.icon size={18} /><span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8">
+            {activeTab === 'profil' && (
+              <div className="max-w-5xl space-y-6 animate-fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Identitas Personal</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <InfoItem label="ID Kepegawaian" value={pengajar.id} />
+                    <InfoItem label="NUPTK" value={pengajar.nuptk} />
+                    <InfoItem label="Nama Lengkap" value={pengajar.namaLengkap} />
+                    <InfoItem label="Jenis Kelamin" value={pengajar.jenisKelamin} />
+                    <InfoItem label="NIK" value={pengajar.nik} />
+                    <InfoItem label="Tempat, Tgl Lahir" value={pengajar.ttl} />
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Data Kontak</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <InfoItem label="WhatsApp" value={pengajar.kontak.wa} />
+                    <InfoItem label="Email" value={pengajar.kontak.email} />
+                    <div className="col-span-1 sm:col-span-2"><InfoItem label="Alamat Lengkap" value={pengajar.kontak.alamat} /></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'tugas' && (
+              <div className="max-w-5xl space-y-6 animate-fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Status & Jabatan</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <InfoItem label="Jabatan Utama" value={pengajar.kepegawaian.jabatan} />
+                    <InfoItem label="Guru Mapel" value={pengajar.kepegawaian.guruMapel} />
+                    <InfoItem label="Musyrif Halaqoh" value={pengajar.kepegawaian.musyrifHalaqoh} />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                    <Users size={20} className="mr-2 text-emerald-600"/> Terhubung ke Halaqoh
+                  </h3>
+                  {halaqohTerkait.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {halaqohTerkait.map(hlq => (
+                        <div key={hlq.id} className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex justify-between items-center">
+                          <div>
+                            <h4 className="font-bold text-emerald-800">{hlq.nama}</h4>
+                            <p className="text-sm font-medium text-emerald-600 mt-1">Jenjang: {hlq.jenjang}</p>
+                          </div>
+                          <span className="bg-white text-emerald-700 px-4 py-1.5 border border-emerald-200 rounded-full text-xs font-bold shadow-sm">
+                            {hlq.jumlahSantri} Santri
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 text-center text-slate-500 font-medium">
+                      Pengajar ini belum ditugaskan di halaqoh manapun.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'pendidikan' && (
+              <div className="max-w-5xl space-y-6 animate-fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-md font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Riwayat Pendidikan</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <InfoItem label="S1 (Sarjana)" value={pengajar.pendidikan.s1} />
+                    <InfoItem label="SMA / Sederajat" value={pengajar.pendidikan.sma} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Utilities Component
+    function InfoItem({ label, value }) {
+      return (
+        <div className="flex flex-col">
+          <span className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">{label}</span>
+          <span className="text-sm font-bold text-slate-800">{value || '-'}</span>
+        </div>
+      );
+    }
+
+    function BerkasItem({ label, status }) {
+      return (
+        <div className="flex items-center justify-between bg-slate-50 border border-slate-200 p-4 rounded-xl">
+          <span className="text-sm font-bold text-slate-700">{label}</span>
+          {status ? (
+            <span className="flex items-center text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-md">
+              <FileCheck size={14} className="mr-1.5" /> Ada
+            </span>
+          ) : (
+            <span className="flex items-center text-xs font-bold text-slate-500 bg-slate-200 px-2.5 py-1 rounded-md">
+              <FileX size={14} className="mr-1.5" /> Kosong
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    // Render Aplikasi ke DOM
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+  </script>
+</body>
+</html>
