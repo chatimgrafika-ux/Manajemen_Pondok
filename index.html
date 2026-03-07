@@ -295,15 +295,102 @@
       const fetchData = async () => {
         setIsLoading(true);
         try {
-          if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbw4FBfjgKIoSoXmqYw52M7QX_K-8ljDCG3L3sauNt2PbOKYy2pv8NBZKcThZr3V8zk3yw/exec") {
-            setTimeout(() => setIsLoading(false), 800); // Simulasi delay jika belum ada URL
-            return;
-          }
           const response = await fetch(`${GOOGLE_SCRIPT_URL}?sheet=all`);
           const result = await response.json();
+          
           if (result.status === 'success') {
-            console.log("Data tersinkronisasi.", result.data);
-            // Anda bisa melakukan pemetaan JSON (mapping) di sini
+            console.log("Data tersinkronisasi dari Google Sheet.", result.data);
+            
+            // --- LOGIKA PEMETAAN (MAPPING) DARI GOOGLE SPREADSHEET KE REACT STATE ---
+            const dbUtama = result.data["Database Utama"] || [];
+            const dbWali = result.data["Informasi_Wali"] || [];
+            
+            const mappedSantri = dbUtama.map(row => {
+              // Cari baris keluarga/wali yang berelasi berdasarkan ID Santri
+              const waliRow = dbWali.find(w => w.ID === row.ID) || {};
+              
+              return {
+                id: row.ID || "-",
+                namaLengkap: row["Nama Lengkap"] || "-",
+                nipd: row.NIPD || "-",
+                nisn: row.NISN || "-",
+                status: row.Status || "Aktif",
+                jenjang: row.Jenjang || "-",
+                halaqoh: row["Nama Halaqoh"] || "-",
+                dapodik: row.Dapodik || "Belum Terdaftar",
+                musyrif: row["Musyrif Halaqoh"] || "-",
+                tahunMasuk: row["Tahun Masuk"] || "-",
+                kelas: row.Kelas || "-",
+                sppBulanan: row["Uang spp"] || "-",
+                jenisKelamin: row["Jenis Kelamin"] || "-",
+                ttl: `${row["Tempat Lahir"] || "-"} / ${row["Tanggal Lahir"] || "-"}`,
+                nik: row.NIK || "-",
+                agama: row.Agama || "Islam",
+                kontak: { 
+                  wa: row["Nomor Whatsapp"] || "-", 
+                  email: row["Alamat Email"] || "-", 
+                  alamat: row.Alamat || "-", 
+                  desa: row.Desa || "-", 
+                  kecamatan: row.Kecamatan || "-", 
+                  kabupaten: row["Kabupaten/Kota"] || "-" 
+                },
+                asalSekolah: { 
+                  nama: row["Nama Sekolah"] || "-", 
+                  npsn: row.NPSN || "-", 
+                  alamat: row["Alamat Sekolah"] || "-", 
+                  kecamatan: row["Kecamatan Sekolah"] || "-", 
+                  kabupaten: row["Kabupaten / Kota Sekolah"] || "-", 
+                  provinsi: row["Provinsi Sekolah"] || "-" 
+                },
+                fisik: { 
+                  bb: "-", 
+                  tb: "-", 
+                  baju: row["Ukuran Baju"] || "-", 
+                  celana: row["Ukuran Celana"] || "-", 
+                  topi: row["Ukuran Topi"] || "-" 
+                },
+                keluarga: {
+                  anakKe: waliRow["Anak Ke"] || "-", 
+                  jumlahSaudara: waliRow["Jumlah Saudara"] || "-", 
+                  tinggalBersama: waliRow["Tinggal Bersama"] || "-",
+                  ayah: { 
+                    nama: waliRow["Nama Ayah"] || "-", 
+                    ttl: `${waliRow["Tempat Lahir Ayah"] || "-"} / ${waliRow["Tanggal Lahir Ayah"] || "-"}`,
+                    nik: waliRow["NIK Ayah"] || "-",
+                    pekerjaan: waliRow["Pekerjaan Ayah"] || "-", 
+                    pendidikan: waliRow["Pendidikan Terakhir Ayah"] || "-",
+                    hp: waliRow["Nomor Hp / WhatsApp Ayah"] || "-", 
+                    penghasilan: waliRow["Penghasilan Ayah"] || "-" 
+                  },
+                  ibu: { 
+                    nama: waliRow["Nama Ibu"] || "-", 
+                    ttl: `${waliRow["Tempat Lahir Ibu"] || "-"} / ${waliRow["Tanggal Lahir Ibu"] || "-"}`,
+                    nik: waliRow["NIK Ibu"] || "-",
+                    pekerjaan: waliRow["Pekerjaan Ibu"] || "-", 
+                    pendidikan: waliRow["Pendidikan Terakhir Ibu"] || "-",
+                    hp: waliRow["Nomor Hp / WhatsApp Ibu"] || "-", 
+                    penghasilan: waliRow["Penghasilan Ibu"] || "-" 
+                  },
+                  wali: { 
+                    nama: waliRow["Nama Wali"] || "-", 
+                    ttl: `${waliRow["Tempat Lahir Wali"] || "-"} / ${waliRow["Tanggal Lahir Wali"] || "-"}`,
+                    nik: waliRow["NIK Wali"] || "-",
+                    pekerjaan: waliRow["Pekerjaan Wali"] || "-", 
+                    pendidikan: waliRow["Pendidikan Terakhir Wali"] || "-",
+                    hp: waliRow["Nomor Hp / WhatsApp Wali"] || "-", 
+                    penghasilan: waliRow["Penghasilan Wali"] || "-" 
+                  }
+                },
+                berkas: { ijazah: false, foto: false, akte: false, kk: false, sertifikat: false, sktm: false },
+                tahfizh: { juz: "-", suratTerakhir: "-", kualitas: "-", prestasi: "-" },
+                pembayaran: [] 
+              };
+            });
+            
+            // Masukkan data hasil pemetaan ke dalam State React
+            if (mappedSantri.length > 0) {
+              setDataSantri(mappedSantri);
+            }
           }
         } catch (error) {
           showMessage("Error Sinkronisasi", "Gagal mengambil data dari server. Periksa koneksi Anda.", "error");
@@ -321,11 +408,11 @@
         showConfirm("Hapus Data", `Anda yakin ingin menghapus data ${id}? Tindakan ini akan menghapus data dari seluruh tabel terkait.`, async () => {
           setIsLoading(true);
           try {
-            if (GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbw4FBfjgKIoSoXmqYw52M7QX_K-8ljDCG3L3sauNt2PbOKYy2pv8NBZKcThZr3V8zk3yw/exec") {
-              await fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST", body: JSON.stringify({ action: "multi_delete", id: id })
-              });
-            }
+            // Hapus blok 'if' agar fetch tetap berjalan
+            await fetch(GOOGLE_SCRIPT_URL, {
+              method: "POST", body: JSON.stringify({ action: "multi_delete", id: id })
+            });
+            
             // Hapus dari state lokal
             setDataSantri(prev => prev.filter(s => s.id !== id));
             setSelectedSantri(null);
