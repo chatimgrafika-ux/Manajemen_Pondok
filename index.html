@@ -158,7 +158,7 @@ export default function App() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      if (GOOGLE_SCRIPT_URL === "URL_WEB_APP_ANDA_DISINI") {
+      if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwMay5nhbwMpe8tLYJNi8p3vytyxYb50cO37rGm1Fqmyz7Um8vMbvwltP05xNdJrGla2w/exec") {
         // Jika belum ada URL, gunakan simulasi loading 1 detik lalu pakai mock data
         setTimeout(() => setIsLoading(false), 1000);
         return;
