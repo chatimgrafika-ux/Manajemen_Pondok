@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfirmasi Pembayaran SPP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .spinner { border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Custom scrollbar for dropdown */
+        select::-webkit-scrollbar { width: 8px; }
+        select::-webkit-scrollbar-track { background: #f1f1f1; }
+        select::-webkit-scrollbar-thumb { background: #a7f3d0; border-radius: 4px; }
+
+        /* Custom Checkbox Styling */
+        .month-checkbox:checked + div {
+            background-color: #ecfdf5; /* emerald-50 */
+            border-color: #059669; /* emerald-600 */
+            color: #047857; /* emerald-700 */
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-6 sm:py-10 px-4 sm:px-6 lg:px-8 flex items-start sm:items-center justify-center">
+
+    <div class="max-w-3xl w-full bg-white rounded-2xl shadow-xl overflow-hidden my-4 sm:my-0">
+        <!-- Header -->
+        <div class="bg-emerald-700 px-5 py-5 sm:px-8 sm:py-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold">Konfirmasi Pembayaran</h2>
+                    <p class="text-emerald-100 text-sm mt-1">Sistem Administrasi Pondok Pesantren</p>
+                </div>
+                <i class="fas fa-file-invoice-dollar text-4xl opacity-80"></i>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form id="paymentForm" class="px-5 py-6 sm:px-8 sm:py-8 space-y-5 sm:space-y-6">
+            
+            <div id="loadingData" class="text-center py-4 hidden">
+                <i class="fas fa-circle-notch fa-spin text-emerald-600 text-2xl"></i>
+                <p class="text-sm text-gray-500 mt-2">Memuat data santri...</p>
+            </div>
+
+            <div id="formFields" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Data Santri -->
+                <div class="md:col-span-2 border-b pb-4 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800"><i class="fas fa-user-graduate mr-2 text-emerald-600"></i>Data Santri</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kelas <span class="text-red-500">*</span></label>
+                    <select id="kelas" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+                        <option value="">-- Pilih Kelas --</option>
+                        <!-- Options populated via JS -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+                    <select id="namaLengkap" required disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition bg-gray-50 disabled:cursor-not-allowed">
+                        <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
+                    </select>
+                    <input type="hidden" id="idSantri">
+                </div>
+
+                <!-- Data Wali -->
+                <div class="md:col-span-2 border-b pb-4 mt-4 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800"><i class="fas fa-users mr-2 text-emerald-600"></i>Data Wali Santri</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Wali / Orang Tua <span class="text-red-500">*</span></label>
+                    <input type="text" id="namaWali" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="Nama lengkap wali">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-gray-400 text-xs">(Opsional)</span></label>
+                    <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="email@contoh.com">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">+62</span>
+                        <input type="tel" id="nomorWa" required class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="81234567890">
+                    </div>
+                </div>
+
+                <!-- Rincian Pembayaran -->
+                <div class="md:col-span-2 border-b pb-4 mt-4 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800"><i class="fas fa-money-bill-wave mr-2 text-emerald-600"></i>Rincian Pembayaran</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pembayaran <span class="text-red-500">*</span></label>
+                    <select id="jenisPembayaran" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition">
+                        <option value="SPP">SPP</option>
+                        <option value="Uang Makan">Uang Makan</option>
+                        <option value="Uang Pangkal">Uang Pangkal</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tahun <span class="text-red-500">*</span></label>
+                    <input type="number" id="tahun" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" value="2024" min="2020">
+                </div>
+
+                <!-- Pilihan Bulan (Hanya muncul jika SPP) -->
+                <div id="bulanContainer" class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pembayaran Bulan <span class="text-red-500">*</span> <span class="text-xs text-gray-400 font-normal">(Bisa pilih lebih dari satu)</span></label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        <!-- Generate Checkboxes -->
+                        <script>
+                            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                            months.forEach(month => {
+                                document.write(`
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" value="${month}" class="month-checkbox hidden">
+                                        <div class="px-3 py-2 border border-gray-300 rounded-lg text-center text-sm text-gray-600 transition duration-200 hover:border-emerald-400">
+                                            ${month}
+                                        </div>
+                                    </label>
+                                `);
+                            });
+                        </script>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rekening Pondok Tujuan <span class="text-red-500">*</span></label>
+                    <select id="rekening" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition">
+                        <option value="">-- Pilih Rekening --</option>
+                        <option value="BSI - 7268534061 (PPDB Ponpes Hidayatullah Gambesi)">BSI - 7268534061 (PPDB Ponpes Hidayatullah Gambesi)</option>
+                        <option value="Muamalat - 8410044343 (Pondok Pesantren Tahfidz Quran)">Muamalat - 8410044343 (Pondok Pesantren Tahfidz Quran)</option>
+                        <option value="Muamalat - 8410047799 (Pondok Pesantren Tahfidz Quran)">Muamalat - 8410047799 (Pondok Pesantren Tahfidz Quran)</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nominal (Rp) <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 font-semibold text-gray-600">Rp</span>
+                        <input type="text" id="nominalDisplay" required class="w-full pl-12 pr-4 py-2 text-lg font-bold text-emerald-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="0">
+                        <input type="hidden" id="nominalValue">
+                    </div>
+                    <p class="text-sm mt-2 text-gray-600 bg-emerald-50 p-2 rounded border border-emerald-100 italic" id="terbilangText">Nol Rupiah</p>
+                </div>
+
+                <!-- Verifikasi & File -->
+                <div class="md:col-span-2 border-b pb-4 mt-4 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800"><i class="fas fa-check-circle mr-2 text-emerald-600"></i>Validasi & Bukti</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ustadz Penerima <span class="text-red-500">*</span></label>
+                    <input type="text" id="namaUstadz" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="Nama Admin / Ustadz">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Tambahan</label>
+                    <textarea id="catatan" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="Tuliskan jika ada keterangan khusus..."></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti Pembayaran <span class="text-red-500">*</span></label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="fileBukti" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-emerald-400 mb-3"></i>
+                                <p class="mb-2 text-sm text-gray-500 font-semibold" id="fileNameDisplay">Klik untuk upload atau drag and drop</p>
+                                <p class="text-xs text-gray-500">PNG, JPG, JPEG atau PDF (Max. 3MB)</p>
+                            </div>
+                            <input id="fileBukti" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" required />
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4 mt-6 border-t">
+                <button type="submit" id="btnSubmit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fas fa-paper-plane"></i> Kirim Konfirmasi
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Script Pengiriman Fonnte -->
+    <script src="fonnte_sender.js"></script>
+
+    <script>
+        // ==========================================
+        // KONFIGURASI PENTING
+        // ==========================================
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz5MtQeRskoXm23s7cDEGs6pVkQNInJztIm8biLiQ5ULEMMuHnzH388R9E7b4xaVOjO/exec"; 
+        
+        let dataSantri = {};
+
+        const form = document.getElementById('paymentForm');
+        const kelasSelect = document.getElementById('kelas');
+        const namaLengkapSelect = document.getElementById('namaLengkap');
+        const idSantriInput = document.getElementById('idSantri');
+        const nominalDisplay = document.getElementById('nominalDisplay');
+        const nominalValue = document.getElementById('nominalValue');
+        const terbilangText = document.getElementById('terbilangText');
+        const fileBukti = document.getElementById('fileBukti');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const btnSubmit = document.getElementById('btnSubmit');
+        
+        const jenisPembayaran = document.getElementById('jenisPembayaran');
+        const bulanContainer = document.getElementById('bulanContainer');
+
+        // Logic memunculkan/menyembunyikan pilihan Bulan
+        jenisPembayaran.addEventListener('change', function() {
+            if (this.value === 'SPP') {
+                bulanContainer.classList.remove('hidden');
+            } else {
+                bulanContainer.classList.add('hidden');
+                // Uncheck semua bulan jika bukan SPP
+                document.querySelectorAll('.month-checkbox').forEach(cb => cb.checked = false);
+            }
+        });
+
+        // Trigger on load
+        jenisPembayaran.dispatchEvent(new Event('change'));
+
+        // Load Data Santri
+        document.addEventListener('DOMContentLoaded', async () => {
+            const loading = document.getElementById('loadingData');
+            loading.classList.remove('hidden');
+            try {
+                const response = await fetch(GAS_URL + "?action=getSantri");
+                const textResult = await response.text(); 
+                let result;
+                try { result = JSON.parse(textResult); } catch (e) { throw new Error("Gagal terhubung ke server."); }
+                
+                if(result.error) throw new Error(result.error);
+                if(Object.keys(result).length === 0) throw new Error("Data santri kosong.");
+
+                dataSantri = result;
+                const kelases = Object.keys(dataSantri).sort();
+                kelases.forEach(k => {
+                    const option = document.createElement('option');
+                    option.value = k;
+                    option.textContent = k;
+                    kelasSelect.appendChild(option);
+                });
+            } catch (error) {
+                Swal.fire('Informasi', error.message, 'warning');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        });
+
+        // Event Listener Kelas
+        kelasSelect.addEventListener('change', function() {
+            const selectedKelas = this.value;
+            idSantriInput.value = "";
+            namaLengkapSelect.innerHTML = '<option value="">-- Pilih Nama Santri --</option>';
+
+            if (selectedKelas && dataSantri[selectedKelas]) {
+                namaLengkapSelect.disabled = false;
+                namaLengkapSelect.classList.remove('bg-gray-50', 'disabled:cursor-not-allowed');
+
+                dataSantri[selectedKelas].forEach(santri => {
+                    const option = document.createElement('option');
+                    option.value = santri.id;          // ID santri
+                    option.textContent = santri.nama;  // Nama tampil
+                    option.dataset.nama = santri.nama; // Nama asli untuk submit
+                    namaLengkapSelect.appendChild(option);
+                });
+            } else {
+                namaLengkapSelect.disabled = true;
+                namaLengkapSelect.classList.add('bg-gray-50', 'disabled:cursor-not-allowed');
+            }
+        });
+
+        // Event Listener Nama Santri
+        namaLengkapSelect.addEventListener('change', function() {
+            idSantriInput.value = this.value || "";
+        });
+
+        // Event Listener Nominal
+        nominalDisplay.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^,\d]/g, '').toString();
+            let split = value.split(',');
+            let sisa = split[0].length % 3;
+            let rupiah = split[0].substr(0, sisa);
+            let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+            if (ribuan) { let separator = sisa ? '.' : ''; rupiah += separator + ribuan.join('.'); }
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            this.value = rupiah;
+            let cleanNumber = value.replace(/\./g, '');
+            nominalValue.value = cleanNumber;
+            terbilangText.textContent = cleanNumber ? toTerbilang(cleanNumber) + " Rupiah" : "Nol Rupiah";
+        });
+
+        // Event Listener File
+        fileBukti.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                let fileSize = this.files[0].size / 1024 / 1024;
+                if (fileSize > 3) {
+                    Swal.fire('File Terlalu Besar', 'Ukuran file maksimal adalah 3MB', 'warning');
+                    this.value = '';
+                    fileNameDisplay.textContent = "Klik untuk upload atau drag and drop";
+                    return;
+                }
+                fileNameDisplay.textContent = this.files[0].name;
+                fileNameDisplay.classList.add('text-emerald-600');
+            } else {
+                fileNameDisplay.textContent = "Klik untuk upload atau drag and drop";
+                fileNameDisplay.classList.remove('text-emerald-600');
+            }
+        });
+
+        // Submit Form
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            let selectedMonthsStr = "-";
+            
+            // Validasi Khusus Jika SPP
+            if (jenisPembayaran.value === 'SPP') {
+                const checkedMonths = Array.from(document.querySelectorAll('.month-checkbox:checked')).map(cb => cb.value);
+                if (checkedMonths.length === 0) {
+                    Swal.fire('Peringatan', 'Harap pilih minimal satu bulan untuk pembayaran SPP!', 'warning');
+                    return;
+                }
+                selectedMonthsStr = checkedMonths.join(', ');
+            }
+
+            if (!fileBukti.files || fileBukti.files.length === 0) {
+                Swal.fire('Peringatan', 'Harap upload bukti pembayaran!', 'warning');
+                return;
+            }
+
+            const selectedNamaOption = namaLengkapSelect.options[namaLengkapSelect.selectedIndex];
+
+            if (!idSantriInput.value || !selectedNamaOption || !selectedNamaOption.dataset.nama) {
+                Swal.fire('Peringatan', 'Harap pilih nama santri terlebih dahulu!', 'warning');
+                return;
+            }
+
+            const file = fileBukti.files[0];
+            const reader = new FileReader();
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<div class="spinner w-5 h-5 mr-2"></div> Mengirim...`;
+
+            reader.onload = async function() {
+                const base64Data = reader.result.split(',')[1];
+                const payload = {
+                    email: document.getElementById('email').value,
+                    kelas: document.getElementById('kelas').value,
+                    idSantri: idSantriInput.value,
+                    namaLengkap: selectedNamaOption.dataset.nama,
+                    namaWali: document.getElementById('namaWali').value,
+                    nomorWa: document.getElementById('nomorWa').value,
+                    jenisPembayaran: jenisPembayaran.value,
+                    bulan: selectedMonthsStr,
+                    tahun: document.getElementById('tahun').value,
+                    rekening: document.getElementById('rekening').value,
+                    nominal: nominalValue.value,
+                    terbilang: toTerbilang(nominalValue.value) + " Rupiah",
+                    namaUstadz: document.getElementById('namaUstadz').value,
+                    catatan: document.getElementById('catatan').value,
+                    fileName: file.name,
+                    mimeType: file.type,
+                    fileBase64: base64Data
+                };
+
+                try {
+                    const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                    const textResult = await response.text();
+                    let result = JSON.parse(textResult);
+                    
+                    if (result.status === 'success') {
+                        // KETIKA BERHASIL, KIRIM NOTIF FONNTE (Panggil fungsi dari fonnte_sender.js)
+                        if(typeof sendFonnteNotification === 'function') {
+                            await sendFonnteNotification(payload);
+                        }
+
+                        Swal.fire({
+                            icon: 'success', title: 'Berhasil!',
+                            text: 'Konfirmasi pembayaran berhasil dikirim.',
+                            confirmButtonColor: '#059669'
+                        }).then(() => {
+                            form.reset();
+                            idSantriInput.value = "";
+                            fileNameDisplay.textContent = "Klik untuk upload atau drag and drop";
+                            fileNameDisplay.classList.remove('text-emerald-600');
+                            namaLengkapSelect.innerHTML = '<option value="">-- Pilih Kelas Terlebih Dahulu --</option>';
+                            namaLengkapSelect.disabled = true;
+                            terbilangText.textContent = "Nol Rupiah";
+                            jenisPembayaran.dispatchEvent(new Event('change')); // reset bulan display
+                        });
+                    } else if (result.status === 'duplicate') {
+                        Swal.fire({ icon: 'warning', title: 'Pembayaran Ditolak', text: result.message, confirmButtonColor: '#d33' });
+                    } else {
+                        throw new Error(result.error || result.message);
+                    }
+                } catch (error) {
+                    Swal.fire('Error', 'Terjadi kesalahan: ' + error.message, 'error');
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = `<i class="fas fa-paper-plane"></i> Kirim Konfirmasi`;
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function toTerbilang(angka) {
+            angka = parseInt(angka);
+            if(isNaN(angka)) return "";
+            let bilangan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+            if (angka < 12) return bilangan[angka];
+            if (angka < 20) return toTerbilang(angka - 10) + " Belas";
+            if (angka < 100) return toTerbilang(Math.floor(angka / 10)) + " Puluh " + toTerbilang(angka % 10);
+            if (angka < 200) return "Seratus " + toTerbilang(angka - 100);
+            if (angka < 1000) return toTerbilang(Math.floor(angka / 100)) + " Ratus " + toTerbilang(angka % 100);
+            if (angka < 2000) return "Seribu " + toTerbilang(angka - 1000);
+            if (angka < 1000000) return toTerbilang(Math.floor(angka / 1000)) + " Ribu " + toTerbilang(angka % 1000);
+            if (angka < 1000000000) return toTerbilang(Math.floor(angka / 1000000)) + " Juta " + toTerbilang(angka % 1000000);
+            if (angka < 1000000000000) return toTerbilang(Math.floor(angka / 1000000000)) + " Milyar " + toTerbilang(angka % 1000000000);
+            return "";
+        }
+        document.getElementById('tahun').value = new Date().getFullYear();
+    </script>
+</body>
+</html>
